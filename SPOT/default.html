@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<body>
+		<script language="javascript" src="geotools.min.js"> </script>
+		<script language="javascript" src="J50Npi.min.js"> </script>
+		<script language="javascript" src="SPOT.min.js"> </script>
+		<script language="javascript" src="SPOT_OS.min.js"> </script>
+		<h1 id="title"></h1>
+		<table id="tblMessages">
+			<!--thead>
+				<tr>
+					<th colspan='2'>Timestamp</th>
+					<th></th>
+					<th>Location</th>
+					<th>Message</th>
+				</tr>
+				</thead-->
+		</table>
+		<hr/>
+		<table id="updateTimes">
+			<tr>
+				<td>Last Updated</td>
+				<td id="updateTimestamp"></td>
+			</tr>
+			<tr>
+				<td rowspan='3'>Update</td>
+				<td><a href='javascript:SPOT_FEEDS.refresh()'>Now</a></td>
+			</tr>
+			<tr>
+				<td>
+					<select id="updateInterval" onchange="SPOT_FEEDS.updateTimer()">
+						<option value="0">Manual only</option>
+						<!--option value="1">Every minute</option-->
+						<option value="10">After 10 minutes</option>
+						<option value="15">After 15 minutes</option>
+						<option value="20">After 20 minutes</option>
+						<option value="30">After 30 minutes</option>
+						<option value="60">After 1 hour</option>
+						<option value="90">AFter 90 minutes</option>
+						<option value="120">After 2 hours</option>
+						<option value="240">After 4 hours</option>
+						<option value="720">After 12 hours</option>
+						<option value="1440">After 1 day</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href='javascript:SPOT_FEEDS.getHistory()'>Get Earlier Data</a>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>
+
+<!-- vim: ts=2:sw=2
+-->

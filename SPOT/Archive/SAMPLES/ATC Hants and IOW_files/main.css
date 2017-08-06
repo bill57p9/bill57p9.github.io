@@ -1,0 +1,219 @@
+body {
+    font: 12px Arial, Helvetica, Verdana;
+    background-color: #000000;
+}
+
+a {
+    color: #Ffa500;
+}
+
+a:active {
+    color: #F99D1C;
+}
+
+a:hover {
+    color: #F99D1C;
+}
+
+
+.layout-header {
+    width: 100%;
+    height: 90px;
+    color: #fafafa;
+    background: #000000 url(../images/layout/banner.png) no-repeat scroll top left;
+}
+
+.logo {
+    display: block;
+    width: 287px;
+    height: 71px;
+    margin-left: 20px;
+    background: transparent url(../images/layout/logo.png) scroll top left;
+}
+
+.floatable {
+    float: left;
+}
+
+.floatable-right {
+    float: right;
+}
+
+.buybutton {
+    float: right;
+    margin-right: 15px;
+}
+
+.topbutton {
+    display: block;
+    float: left;
+    height: 27px;
+    background: transparent url(../images/background-all.png) no-repeat scroll;
+    cursor: pointer;
+}
+
+.button-edge {
+    width: 12px;
+}
+
+.button-middle {
+    background-repeat: repeat-x;
+    padding: 8px 0px 2px 0px;
+    font-weight: bold;
+    min-width: 100px;
+    text-align: center;
+}
+
+.selected .topbutton-left {
+    background-position: -8px -345px;
+}
+
+.selected .topbutton-right {
+    background-position: -8px -377px;
+}
+
+.selected .topbutton-middle {
+    background-position: -0px -414px;
+    vertical-align: top;
+    padding-top: 7px;
+    min-width: 20px;
+    height: 23px;
+}
+
+.map-popup {
+	border: 0px none transparent;
+	padding: 5px;
+	font: 11px tahoma,arial,helvetica,sans-serif;
+}
+
+.map-popup-header {
+	font: 11px tahoma,arial,helvetica,sans-serif;
+	font-weight: bold;
+	min-height: 17px;
+	height: 17px;
+	width: 240px;
+	text-align: left;
+	vertical-align: middle;
+	overflow: hidden;
+	padding: 3px;
+	background-color: rgb(238, 232, 170); 
+	position: absolute; 
+	top: 8px;
+}
+
+.map-popup-body {
+	font: 11px tahoma,arial,helvetica,sans-serif;
+	margin-top: 40px;
+}
+
+
+.item-name {
+	font: 11px tahoma,arial,helvetica,sans-serif;
+	font-weight: bold;
+	left: 15px;
+	float: left;
+	max-width: 85px;
+	min-width: 85px;
+    overflow: hidden;
+	padding: 2px;
+}
+
+.item-value {
+	font: 11px tahoma,arial,helvetica,sans-serif;
+	margin-left: 80px;
+	max-width: 165px;
+	min-width: 165px;
+	padding: 2px;
+}
+
+.spotHelpDefault {
+	margin-top: 10px;
+	margin-left: 10px;
+	font: 12px tahoma,arial,helvetica,sans-serif;
+	align: justified;
+}
+
+.spotIntroDefault {
+	margin-top: 10px;
+	margin-left: 10px;
+	color: #FFFFFF; 
+	background-color: #000000;
+	font-family: tahoma,arial,verdana,sans-serif;
+	font-size: 12px;
+}
+
+.spotHelpHeading1 {
+	font-size: 14px;
+	font-weight: bold;
+	text-align: center;
+	color: rgb(255, 153, 0);
+}
+
+.spotHelpHeading2 {
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;
+	color: rgb(255, 153, 0);
+}
+
+.spotHelpHeading3 {
+	font-size: 13px;
+	font-weight: bold;
+	text-align: left;
+	color: rgb(255, 153, 0);
+	padding-top: 15px;
+}
+	
+
+
+.spotHelpList {
+	list-style-type: square;
+	padding-left: 15px;
+}
+
+li.spotHelpList {
+	padding-top: 15px;
+}
+
+.spotHelpList2 {
+	list-style-type: circle;
+	padding-left: 15px;
+}
+
+
+.spotHelpDiv {
+	padding-top: 5px;
+	padding-bottom: 15px;
+	width: 250px;
+}
+
+.imgdiv {
+	text-align: center;
+}
+
+#buyNowTop{
+	height: 43px;
+        margin-top: 15px;
+}
+
+.header-ad-text {
+    font: bold 14px "Lucida Grande", Verdana, Arial;
+    padding-right: 5px;
+    padding-top: 6px;
+}
+
+#uiSpnSpotImage {
+    display: block;
+    margin: 10px auto;
+    height: 295px;
+    width: 198px;
+    background: #000000 url(../images/SPOT2.png) no-repeat top left;
+}
+.elabel {font-size: 9px;font-weight: bold;color:black;background-color:transparent;}
+.add {background-image:url(../images/SPOTAdd.png) !important;}
+.question {background-image:url(../images/IconFAQ.png) !important;}
+.option {background-image:url(../images/SPOTLegendInfo.png) !important;}
+.remove {background-image:url(../images/SPOTRemove.png) !important;}
+.copyright {font: 9pt tahoma,arial,helvetica,sans-serif;padding-left:5px;}
+a:hover {color:#0000FF;text-decoration:None}
+a:link {color:#FF0000}

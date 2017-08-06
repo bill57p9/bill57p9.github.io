@@ -1,0 +1,83 @@
+{
+  "response": {
+    "feedMessageResponse": {
+      "count": "4",
+      "feed": {
+        "id": "0BBgJStzRlLtnq5GZ5mf2sGvYA02Sg1qH",
+        "name": "ATC Hants and IOW",
+        "description": "ATC Hants and IOW",
+        "status": "ACTIVE",
+        "usage": "0",
+        "daysRange": "7",
+        "detailedMessageShown": "true"
+      },
+      "totalCount": "4",
+      "activityCount": "0",
+      "messages": {
+        "message": [
+          {
+            "-clientUnixTime": "0",
+            "id": "229317264",
+            "messengerId": "0-8312354",
+            "messengerName": "HIOW 3",
+            "unixTime": "1378040118",
+            "messageType": "TRACK",
+            "latitude": "51.03897",
+            "longitude": "-1.28284",
+            "modelId": "SPOT2",
+            "showCustomMsg": "Y",
+            "dateTime": "2013-09-01T12:55:18+0000",
+            "batteryState": "GOOD",
+            "hidden": "0"
+          },
+          {
+            "-clientUnixTime": "0",
+            "id": "229316815",
+            "messengerId": "0-8312326",
+            "messengerName": "HIOW 4",
+            "unixTime": "1378039903",
+            "messageType": "TRACK",
+            "latitude": "51.04634",
+            "longitude": "-1.24634",
+            "modelId": "SPOT2",
+            "showCustomMsg": "Y",
+            "dateTime": "2013-09-01T12:51:43+0000",
+            "batteryState": "GOOD",
+            "hidden": "0"
+          },
+          {
+            "-clientUnixTime": "0",
+            "id": "229316421",
+            "messengerId": "0-8315975",
+            "messengerName": "HIOW 1",
+            "unixTime": "1378039759",
+            "messageType": "TRACK",
+            "latitude": "51.05005",
+            "longitude": "-1.26437",
+            "modelId": "SPOT2",
+            "showCustomMsg": "Y",
+            "dateTime": "2013-09-01T12:49:19+0000",
+            "batteryState": "GOOD",
+            "hidden": "0"
+          },
+          {
+            "-clientUnixTime": "0",
+            "id": "229312700",
+            "messengerId": "0-8317654",
+            "messengerName": "HIOW 2",
+            "unixTime": "1378038155",
+            "messageType": "TRACK",
+            "latitude": "51.0422",
+            "longitude": "-1.27945",
+            "modelId": "SPOT2",
+            "showCustomMsg": "Y",
+            "dateTime": "2013-09-01T12:22:35+0000",
+            "batteryState": "GOOD",
+            "hidden": "0"
+          }
+        ]
+      }
+    }
+  }
+}
+

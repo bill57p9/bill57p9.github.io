@@ -1,0 +1,6 @@
+<?xml version='1.0' standalone='no' ?>
+<?xml-stylesheet type='text/xsl' href='index.xslt'?>
+<!DOCTYPE doc [
+<!ENTITY plotn SYSTEM 'latest.xml'>
+]>
+<plot>&plotn;</plot>

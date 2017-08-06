@@ -1,0 +1,4 @@
+HIOW
+http://share.findmespot.com/shared/faces/viewspots.jsp?glId=0BBgJStzRlLtnq5GZ5mf2sGvYA02Sg1qH
+
+https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/0BBgJStzRlLtnq5GZ5mf2sGvYA02Sg1qH/message.json
