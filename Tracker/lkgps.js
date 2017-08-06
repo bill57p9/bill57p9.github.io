@@ -72,23 +72,7 @@ function LKGPS_FEED(id)
 	this.type	="LKGPS";
 	this.id		= id;
 	this.host	= "http://www.lkgps.net:8080"
-	this.addMessage = function(message)
-	{
-		var msg=new SPOT_MESSAGE(message);
-		// Look to see if we "know" the messenger
-		var tracker=this.getTracker(message.messengerId);
-		if(!tracker)
-			this.tracker.push(new SPOT_TRACKER(message));
-		else 
-		{
-			// Check that we don't already have the message
-			for(var ix=0; ix<tracker.message.length; ix++)
-				if(tracker.message[ix].id == msg.id)
-					return false;
-
-			tracker.message.unshift(msg);
-		}
-	};
+	this.tracker.push(new LKGPS_TRACKER(this.host, id, 102));
 	this.update = function(callback, previous)
 	{
 		// Update all trackers, though usually only 1
