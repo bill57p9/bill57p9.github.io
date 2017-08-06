@@ -22,7 +22,7 @@ LKGPS_API.prototype.get = function(params, callback)
 		var url = this.baseURL + "&Key=7DU2DJFDR8321"
 		if(params)
 			url = url + "&" + params
-		this.ajax.open("GET", "http://anyorigin.com/go/?url=" + encodeURIComponent(url), true );
+		this.ajax.open("GET", "https://cors-anywhere.herokuapp.com/" + url, true );
 		this.ajax.send();
 	};
 
