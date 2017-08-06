@@ -1,6 +1,32 @@
 // lkgps.js
 // Supports LKGPS type feeds by DeviceID (1 tracker per feed)
 
+// LKGPS_API - inherits from XMLHttpRequest
+function LKGPS_API(baseURL)
+{
+	this.parser = new DOMParser();
+	this.baseURL	= baseURL;
+	this.get = function(params, callback)
+	{
+		// Set up callback
+		this.onreadystatechange = function()
+		{
+			if (this.readyState == 4 && this.status == 200)
+				callback(JSON.parse(parser.parseFromString(this.responseText, "text/xml").childNodes[0].textContent));
+		};
+
+		// Set full URL
+		var url = baseURL + "&Key=7DU2DJFDR8321"
+		if(params)
+			url = url + "&" + params
+		this.open("GET", url, true );
+		this.send();
+	};
+}
+LKGPS_API.prototype = new XMLHttpRequest();
+LKGPS_API.prototype.constructor = LKGPS_API;
+
+
 // Create new LKGPS_TRACKER
 function LKGPS_TRACKER(host, deviceID, deviceModel)
 {
@@ -10,7 +36,7 @@ function LKGPS_TRACKER(host, deviceID, deviceModel)
 	this.getStatus	= function(callback)	{ ApiStatus.get(null, callback); };
 	this.getHistory	= function(startDate, endDate, callback)
 	{
-		ApiHistory.get("StartTime=" + endDate + "&EndTime=" endDate, callback);
+		ApiHistory.get("StartTime=" + startDate + "&EndTime=" endDate, callback);
 	};
 	this.name		= deviceID;
 	this.type		= deviceModel;
@@ -39,31 +65,6 @@ LKGPS_TRACKER.prototype = new TRACKER();
 LKGPS_TRACKER.prototype.constructor = SPOT_TRACKER;
 
 
-
-// LKGPS_API - inherits from XMLHttpRequest
-function LKGPS_API(baseURL)
-{
-	this.parser = new DOMParser();
-	this.baseURL	= baseURL;
-	this.get = function(params, callback)
-	{
-		// Set up callback
-		this.onreadystatechange = function()
-		{
-			if (this.readyState == 4 && this.status == 200)
-				callback(JSON.parse(parser.parseFromString(this.responseText, "text/xml").childNodes[0].textContent));
-		};
-
-		// Set full URL
-		var url = baseURL + "&Key=7DU2DJFDR8321"
-		if(params)
-			url = url + "&" + params
-		this.open("GET", url, true );
-		this.send();
-	};
-}
-LKGPS_API.prototype = new XMLHttpRequest();
-LKGPS_API.prototype.constructor = LKGPS_API;
 
 // LK-GPS_FEED object - inherits from FEED object
 function LKGPS_FEED(id)
