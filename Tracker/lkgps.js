@@ -4,7 +4,6 @@
 // LKGPS_API - inherits from XMLHttpRequest
 function LKGPS_API(baseURL)
 {
-	this.parser		= new DOMParser();
 	this.baseURL	= baseURL;
 	this.ajax		= new XMLHttpRequest();
 }
@@ -15,7 +14,10 @@ LKGPS_API.prototype.get = function(params, callback)
 		this.ajax.onreadystatechange = function()
 		{
 			if (this.readyState == 4 && this.status == 200)
-				callback(JSON.parse(parser.parseFromString(this.responseText, "text/xml").childNodes[0].textContent));
+			{
+				var parser = new DOMParser();
+				callback(JSON.parse(parser.parseFromString(this.responseText, "text/xml").childNodes[0].textContent));				
+			}
 		};
 
 		// Set full URL
