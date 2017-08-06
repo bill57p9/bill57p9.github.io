@@ -4,27 +4,27 @@
 // LKGPS_API - inherits from XMLHttpRequest
 function LKGPS_API(baseURL)
 {
-	this.parser = new DOMParser();
+	this.parser		= new DOMParser();
 	this.baseURL	= baseURL;
-	this.get = function(params, callback)
+	this.ajax		= new XMLHttpRequest();
+}
+LKGPS_API.prototype.constructor = LKGPS_API;
+LKGPS_API.prototype.get = function(params, callback)
 	{
 		// Set up callback
-		this.onreadystatechange = function()
+		this.ajax.onreadystatechange = function()
 		{
 			if (this.readyState == 4 && this.status == 200)
 				callback(JSON.parse(parser.parseFromString(this.responseText, "text/xml").childNodes[0].textContent));
 		};
 
 		// Set full URL
-		var url = baseURL + "&Key=7DU2DJFDR8321"
+		var url = this.baseURL + "&Key=7DU2DJFDR8321"
 		if(params)
 			url = url + "&" + params
-		this.open("GET", url, true );
-		this.send();
+		this.ajax.open("GET", url, true );
+		this.ajax.send();
 	};
-}
-LKGPS_API.prototype = new XMLHttpRequest();
-LKGPS_API.prototype.constructor = LKGPS_API;
 
 
 // Create new LKGPS_TRACKER
@@ -32,10 +32,15 @@ function LKGPS_TRACKER(host, deviceID, deviceModel)
 {
 	this.id			= deviceID;
 	this.ApiStatus	= new LKGPS_API(host + "/openapiv3.asmx/GetTracking?Model=" + deviceModel + "&Timezones=&MapType=&Language=&DeviceID=" + deviceID);
-	this.ApiHistory	= new LKGPS_API(host + "/openapiv3.asmx/GetDevicesHistory?TimeZones=&MapType=&ShowLBS=0&DeviceID=" + deviceID);
-	this.getStatus	= function(callback)	{ this.ApiStatus.get(null, callback); };
+	this.ApiHistory	= new LKGPS_API(host + "/openapiv3.asmx/GetDevicesHistory?TimeZones=&MapType=&ShowLBS=0&SelectCount=99999&DeviceID=" + deviceID);
+	this.getStatus	= function(callback)
+	{
+		this.ApiHistory.onSuccess = callback;
+		this.ApiHistory.get(null, callback);
+	};
 	this.getHistory	= function(startDate, endDate, callback)
 	{
+		this.ApiHistory.onSuccess = callback;
 		this.ApiHistory.get("StartTime=" + startDate + "&EndTime=" + endDate, callback);
 	};
 	this.name		= deviceID;
@@ -45,17 +50,17 @@ function LKGPS_TRACKER(host, deviceID, deviceModel)
 	{
 		// Add time filter
 		if(!startDate)
-			startTime = "2017-07-24"
+			startDate = "2017-07-24"
 		
 		if(!endDate)
-			endTime	= "2100-01-01"
+			endDate	= "2100-01-01"
 
 		this.lastUpdated=new Date();
 		this.getStatus(function(json)
 		{
 			console.log(json);
 		});
-		this.ApiHistory.get(startDate, endDate, function(json)
+		this.getHistory(startDate, endDate, function(json)
 		{
 			console.log(json);
 		});
