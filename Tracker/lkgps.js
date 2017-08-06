@@ -36,7 +36,7 @@ function LKGPS_TRACKER(host, deviceID, deviceModel)
 	this.getStatus	= function(callback)	{ ApiStatus.get(null, callback); };
 	this.getHistory	= function(startDate, endDate, callback)
 	{
-		ApiHistory.get("StartTime=" + startDate + "&EndTime=" endDate, callback);
+		ApiHistory.get("StartTime=" + startDate + "&EndTime=" + endDate, callback);
 	};
 	this.name		= deviceID;
 	this.type		= deviceModel;
