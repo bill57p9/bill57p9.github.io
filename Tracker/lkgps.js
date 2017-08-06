@@ -33,10 +33,10 @@ function LKGPS_TRACKER(host, deviceID, deviceModel)
 	this.id			= deviceID;
 	this.ApiStatus	= new LKGPS_API(host + "/openapiv3.asmx/GetTracking?Model=" + deviceModel + "&Timezones=&MapType=&Language=&DeviceID=" + deviceID);
 	this.ApiHistory	= new LKGPS_API(host + "/openapiv3.asmx/GetDevicesHistory?TimeZones=&MapType=&ShowLBS=0&DeviceID=" + deviceID);
-	this.getStatus	= function(callback)	{ ApiStatus.get(null, callback); };
+	this.getStatus	= function(callback)	{ this.ApiStatus.get(null, callback); };
 	this.getHistory	= function(startDate, endDate, callback)
 	{
-		ApiHistory.get("StartTime=" + startDate + "&EndTime=" + endDate, callback);
+		this.ApiHistory.get("StartTime=" + startDate + "&EndTime=" + endDate, callback);
 	};
 	this.name		= deviceID;
 	this.type		= deviceModel;
