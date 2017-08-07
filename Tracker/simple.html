@@ -3,9 +3,11 @@
 	<body>
 		<script language="javascript" src="geotools.min.js"> </script>
 		<script language="javascript" src="J50Npi.min.js"> </script>
-		<script language="javascript" src="Tracker.min.js"> </script>
-		<script language="javascript" src="SPOT.min.js"> </script>
-		<script language="javascript" src="lkgps.js"> </script>
+		<script language="javascript" src="Tracker.js"> </script>
+		<script language="javascript" src="SPOT.js"> </script>
+		<script language="javascript" src="LKGPS.js"> </script>
+		<script language="javascript" src="Tracker_Web_Text.js"> </script>
+		<script language="javascript" src="Tracker_Web.js"> </script>
 		<h1 id="title"></h1>
 		<table id="tblMessages">
 			<!--thead>
@@ -32,12 +34,14 @@
 					<select id="updateInterval" onchange="SPOT_FEEDS.updateTimer()">
 						<option value="0">Manual only</option>
 						<!--option value="1">Every minute</option-->
-						<option value="10">After 10 minutes</option>
-						<option value="15">After 15 minutes</option>
-						<option value="20">After 20 minutes</option>
-						<option value="30">After 30 minutes</option>
-						<option value="60">After 1 hour</option>
-						<option value="90">AFter 90 minutes</option>
+						<option value=  "3">After 3 minutes</option>
+						<option value=  "5">After 5 minutes</option>
+						<option value= "10">After 10 minutes</option>
+						<option value= "15">After 15 minutes</option>
+						<option value= "20">After 20 minutes</option>
+						<option value= "30">After 30 minutes</option>
+						<option value= "60">After 1 hour</option>
+						<option value= "90">After 90 minutes</option>
 						<option value="120">After 2 hours</option>
 						<option value="240">After 4 hours</option>
 						<option value="720">After 12 hours</option>
@@ -51,7 +55,6 @@
 				</td>
 			</tr>
 		</table>
-		<script language="javascript" src="SPOT_OS2.min.js"> </script>
 	</body>
 </html>
 

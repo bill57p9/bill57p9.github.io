@@ -1,23 +1,10 @@
-/////////////////////////////////////////
-//                                     //
-// ADD METHODS TO SPOT_MESSAGE OBJECTS //
-//                                     //
-/////////////////////////////////////////
-//
 
-// Get earlier data
-FEEDS.getHistory=function()
-{
-// *******************************************************************************
-// Should this check for SPOT only???
-	for(var ix=0; ix<FEEDS.feed.length; ix++)
-		FEEDS.feed[ix].update(FEEDS.feed[ix].onUpdate, null, true);
-}
 
 // Display a feed
 // Separating this out makes it easier to cope with non-referesh updates
 FEED.prototype.onUpdate = function(feed)
 {
+	console.log(feed);
 	var insertCell=function(tblRow, html, align)
 	{
 		if(!align)
@@ -47,7 +34,10 @@ FEED.prototype.onUpdate = function(feed)
 		tbody.insertRow(-1).innerHTML=
 			"<th colspan='5' align='left'>"
 			+tracker.name+
-			"</th>";
+			"</th>"+
+			"<td colspan='2' alight='right'>"
+			+ (tracker.status ? tracker.status : "")
+			+"</td>";
 
 		// First we count the number of TRACK messages if hiding them
 		var trackMsgCount=-1;
@@ -72,9 +62,12 @@ FEED.prototype.onUpdate = function(feed)
 			insertCell(row,DAYS[message.time.getDay()]);
 			insertCell(row,message.time.toLocaleTimeString());
 			insertCell(row,message.battery ? "<img src='battery_"+message.battery+".png'>" : "");
-			insertCell(row,"<a href='http://www.streetmap.co.uk/newprint.srf?x="+
-				osgb.eastings+"&y="+osgb.northings+"&z=4&ar=Y'>"+
-				osgb.getGridRef(3)+"</a>");
+			if(message.latitude && message.longitude)
+				insertCell(row,"<a href='http://www.streetmap.co.uk/newprint.srf?x="+
+					osgb.eastings+"&y="+osgb.northings+"&z=4&ar=Y'>"+
+					osgb.getGridRef(3)+"</a>");
+			else
+				insertCell(row,"");
 
 			if(tracker.message.length-1 > msgIx)
 			{
@@ -121,15 +114,13 @@ FEED.prototype.onUpdate = function(feed)
 		}
 	}
 
+	tbody.id = "msgs."+feed.type+"."+feed.id;
 	// Now paste the tbody over the existing TBODY
-	var table=document.getElementById("tblMessages");
-	if(table.tBodies[feed.id])
-		table.tBodies[feed.id].innerHTML=tbody.innerHTML;
+	var table = document.getElementById(tbody.id);
+	if(table)
+		table.innerHTML=tbody.innerHTML;
 	else
-	{
-		tbody.id=feed.id;
-		table.appendChild(tbody);
-	}
+		document.getElementById("tblMessages").appendChild(tbody);
 
 	// Update the timestamp
 	console.log(FEEDS);
@@ -151,78 +142,6 @@ FEEDS.trackMsgDisplay=function(type, feedId, tracker, trackMsgs)
 	feed.tracker[tracker].trackMsgs=trackMsgs;
 	feed.onUpdate(feed);
 }
-
-FEEDS.updateTimeout=null;
-// This function sets the updateTimer
-// based on the menu setting & last update timestamp
-FEEDS.updateTimer=function()
-{
-	// Clear existing timer (if applicable)
-	if(FEEDS.updateTimeout)
-		clearTimeout(FEEDS.updateTimeout);
-
-	// Get the timer setting
-	var timerList=document.getElementById("updateInterval");
-	var timeout=timerList.options[timerList.selectedIndex].value;
-
-	if(timeout>0)
-	{
-		var now=new Date();
-
-		// Timer is specified in minutes. Needs milliseconds
-		timeout *= 60000;
-
-		// Now we need to adjust the timeout based on the last update
-		// & current time
-		timeout -= (now.getTime() - FEEDS.feed[0].lastUpdated.getTime());
-
-		console.log(timeout);
-
-		if(timeout > 0)
-			FEEDS.updateTimeout=setTimeout(FEEDS.refresh, timeout);
-		else	 // Cover off getting a negative number
-			FEEDS.update();
-	}
-}
-
-
-////////////////////
-//                //
-// INITIALISATION //
-//                //
-////////////////////
-
-// Day of week -> Name conversion
-var DAYS=new Array("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
-
-// Get feed, or use example
-var feed=getURLParameter("SPOT");
-if (!feed)
-	feed = 0;
-
-FEEDS.feed.push(new SPOT_FEED(0));
-
-// Try out LKGPS
-//FEEDS.feed.push(new LKGPS_FEED("23636"));
-
-// Get the data once document is fully loaded
-document.onload = FEEDS.refresh();
-
-console.log(FEEDS);
-
-//var lkgps=document.createElement("iframe");
-//lkgps.src = "http://www.lkgps.net:8080/openapiv3.asmx/GetTracking?DeviceID=23636&Model=102&Timezones=&MapType=&Language=&Key=7DU2DJFDR8321";
-//lkgps.onload = function()
-//{
-//	console.log("loaded")
-//	console.log(this.contentDocument.innerHTML);
-//};
-//document.body.appendChild(lkgps);
-//		J50Npi.getJSON("http://www.lkgps.net/Ajax/DevicesAjax.asmx/GetDevicesByUserID?UserID=1546&isFirst=true&TimeZones=China%20Standard%20Time&DeviceID=23636", FEEDS.feed[0].json, function(json)
-	//	{
-		//	console.log(json);
-//		}
-//		);
 
 
 

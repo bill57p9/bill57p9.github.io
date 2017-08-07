@@ -1,7 +1,3 @@
-// Get URL Parameters
-function getURLParameter(name) {
-		return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
-}
 
 // Add altitude to GT_WGS84
 GT_WGS84.prototype.altitude=null;
@@ -70,7 +66,7 @@ GT_WGS84.prototype.getHeading=function(that)
 
 // Generic FEED object
 // within each type, id must be unique
-function FEED() {}
+function FEED() { this.tracker	= new Array(); }
 FEED.prototype.type				= null;
 FEED.prototype.id				= null;
 FEED.prototype.name				= "";
@@ -78,7 +74,6 @@ FEED.prototype.description		= "";
 FEED.prototype.latestMessage	= null;
 FEED.prototype.earliestMessage	= null;
 FEED.prototype.lastUpdated		= null;
-FEED.prototype.tracker			= new Array();
 FEED.prototype.json				= {};
 FEED.prototype.onUpdate			= function(){};
 FEED.prototype.getTracker		= function(id)
@@ -92,12 +87,18 @@ FEED.prototype.getTracker		= function(id)
 };	
 
 // Generic TRACKER object
-function TRACKER() {}
+function TRACKER()
+{
+	this.message = new Array();
+}
 TRACKER.prototype.id	= 0;
 TRACKER.prototype.name	= "";
 TRACKER.prototype.type	= "";
-TRACKER.prototype.message= new Array();
-
+TRACKER.prototype.status= "";
+TRACKER.prototype.messageSort = function ()
+{
+	this.message.sort(function (a,b) { return (b.time - a.time); });
+};
 
 // TRACKER_MESSAGE represents a single TRACKER message
 // It inherits from GT_WGS84 to give geo (& OSGB) functionality
@@ -120,6 +121,7 @@ TRACKER_MESSAGE.prototype.isTrack	= function()
 // FEEDS is a global array of FEEDs, to allow callbacks
 var FEEDS=new Object();
 FEEDS.feed=new Array();
+FEEDS.provider=new Array();
 
 // Alphabetic sort on name
 FEEDS.sortName = function(a,b)
@@ -141,10 +143,18 @@ FEEDS.getFeed = function(type, feedId)
 }
 
 // Add a new FEED
-FEEDS.addFeed = function(feed)
+FEEDS.addFeed = function(type, parameter)
 {
-	FEEDS.feed.push(feed);
-	FEEDS.feed.sort(FEEDS.sortName);
+	FEEDS.provider.forEach(function (provider)
+	{
+		if(type == provider.type)
+		{	
+			FEEDS.feed.push(new provider.construct(parameter));
+			FEEDS.feed.sort(FEEDS.sortName)
+			return true;
+		}
+	});
+	return false;
 }
 
 // Refresh all feeds
@@ -155,6 +165,39 @@ FEEDS.refresh = function()
 		console.log(FEEDS.feed[ix]);
 		FEEDS.feed[ix].update(FEEDS.feed[ix].onUpdate);
 	}
+}
+
+// Return URI query parameters as an array of Key Value pairs
+FEEDS.getURIParameters = function()
+{
+	var parameters = location.search.substring(1);
+	if(parameters)
+	{
+		parameters = JSON.parse('{"parameters":[{"key":"' + parameters.replace(/&/g, '"},{"key":"').replace(/=/g,'","value":"') + '"}]}').parameters;
+		parameters.forEach(function(param)
+		{
+			param.key	= decodeURIComponent(param.key  );
+			param.value	= decodeURIComponent(param.value);
+		} );
+	}
+	return parameters;
+}
+
+// Get single URL Parametes
+FEEDS.getURIParameter = function(name)
+{
+	return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
+}
+
+FEEDS.addProvider = function(type, construct)
+{
+	FEEDS.provider.push({type, construct});
+}
+
+// This autopopulates feeds from the URI
+FEEDS.addFromURI = function()
+{
+	FEEDS.getURIParameters().forEach(function (feed) { FEEDS.addFeed(feed.key, feed.value); } );
 }
 
 // vim: ts=2:sw=2

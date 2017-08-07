@@ -32,7 +32,7 @@ SPOT_MESSAGE.prototype.constructor = SPOT_MESSAGE;
 function SPOT_FEED(id)
 {
 	this.type	="SPOT";
-	this.id		= id;
+	this.id		= id.valueOf();
 	this.addMessage = function(message)
 	{
 		var msg=new SPOT_MESSAGE(message);
@@ -53,7 +53,7 @@ function SPOT_FEED(id)
 	this.update = function(callback, previous)
 	{
 		var url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+this.id+"/message.json";
-		if(!this.id)	// handle sample JSON
+		if(this.id == 0)	// handle sample JSON
 			url="sample/SPOT.jsonp";
 
 		// Add time filter
@@ -103,5 +103,7 @@ function SPOT_FEED(id)
 SPOT_FEED.prototype = new FEED();
 SPOT_FEED.prototype.constructor = SPOT_FEED;
 
+// Register SPOT_FEED with FEEDS
+FEEDS.addProvider("SPOT",SPOT_FEED);
 
 // vim: ts=2:sw=2
