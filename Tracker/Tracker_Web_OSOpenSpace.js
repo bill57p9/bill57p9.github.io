@@ -1,0 +1,321 @@
+
+// Add a method to GT_OSGB to get OpenLayersGeometryPoint or OpenSpaceMapPoint
+GT_OSGB.prototype.getOpenLayersGeometryPoint = function()
+{
+	return new OpenLayers.Geometry.Point(this.eastings, this.northings);
+}
+GT_OSGB.prototype.getOpenSpaceMapPoint = function()
+{
+	return new OpenSpace.MapPoint(this.eastings, this.northings);
+}
+
+
+// Add OpenLayers Feature Style to TRACKER
+TRACKER.prototype.lineStyle = 
+{
+	strokeColor		: "#00CDCD",
+	strokeOpacity	: 0.5,
+	strokeWidth		: 4
+};
+
+
+FEEDS.trackColor = 
+[
+	"#0000CC",
+	"#00CC00",
+	"#00CCCC",
+	"#CC0000",
+	"#CC00CC",
+	"#CCCC00",
+	"#CCCCCC",
+	"#000066",
+	"#006600",
+	"#006666",
+	"#660000",
+	"#660066",
+	"#666600",
+	"#666666"
+];
+
+
+// Show/hide a marker for a particular message location
+TRACKER_MESSAGE.prototype.openSpaceMarker = 
+{
+	obj				: null,
+	icon			: 'https://openspace.ordnancesurvey.co.uk/osmapapi/img_versions/img_1.0.1/OS/images/markers/round-marker-lrg-red.png',
+	size			: { x:17, y:17 },
+	offset			: { x:-8, y:-8 }
+};
+TRACKER_MESSAGE.prototype.openSpaceShow = function()
+{
+	if(!this.openSpaceMarker.obj)
+		this.openSpaceMarker.obj = osMap.createMarker
+		(
+			this.getOSGB().getOpenSpaceMapPoint(),	// position
+			new OpenSpace.Icon
+			(
+				this.openSpaceMarker.icon,	// icon URL
+				new OpenLayers.Size (this.openSpaceMarker.size.x,   this.openSpaceMarker.size.y),
+				new OpenLayers.Pixel(this.openSpaceMarker.offset.x, this.openSpaceMarker.offset.y),
+				null,
+				null
+			)
+		)
+}
+TRACKER_MESSAGE.prototype.openSpaceHide = function()
+{
+	if(this.openSpaceMarker.obj)
+	{
+		osMap.removeMarker(this.openSpaceMarker.obj);
+		this.openSpaceMarker.obj = null;	
+	}
+	
+}
+TRACKER_MESSAGE.prototype.openSpaceToggle = function()
+{
+	this.openSpaceMarker.obj ? this.openSpaceHide() : this.openSpaceShow();
+}
+
+
+// Set layout & sizes
+FEEDS.resize = function()
+{
+	var map = document.getElementById("map");
+	var tbl = document.getElementById("divMessages");
+	
+	if(window.innerWidth > window.innerHeight && window.innerWidth > 900)
+	{
+		// Landscape, map on left
+		map.style.width		= (window.innerWidth  - 420)+"px";
+		map.style.height	= (window.innerHeight -  20)+"px";
+		tbl.style.marginLeft= map.style.width + 30;
+	}
+	else
+	{
+		// Portrait, map on top
+		map.style.width		= (window.innerWidth  -  20)+"px";
+		map.style.height	= (window.innerWidth  -  20)+"px";
+		tbl.style.marginLeft= null;		
+	}
+}
+
+
+// Display a feed
+// Separating this out makes it easier to cope with non-referesh updates
+FEED.prototype.onUpdate = function(feed)
+{
+	// initialise the map if required
+	if(!osMap)
+	{
+		FEEDS.resize();
+		osMap = new OpenSpace.Map('map', {resolutions: [2500, 1000, 500, 200, 100, 50, 25, 10, 5, 4, 2.5, 2, 1]});
+		
+		//configure map options (basicmap.js)
+		setglobaloptions();
+		// add a box displaying co-ordinates (mouse over map to display) 
+		makegrid();
+	}
+	
+	// Loop through all latest message on all trackers & all feeds to build up an array of latest positions, to get average
+	var trackerPosns = new Array();
+	var trackerIx = 0;
+	FEEDS.feed.forEach(function(feed)
+	{
+		feed.tracker.forEach(function(tracker)
+		{
+			if(tracker.message.length > 0)
+				trackerPosns.push(tracker.message[0]);
+		});
+	});
+
+	
+	//set the center of the map and the zoom level
+	osMap.setCenter(new GT_WGS84().getCentre(trackerPosns).getOSGB().getOpenSpaceMapPoint(), 7);
+
+	console.log(feed);
+	var insertCell=function(tblRow, html, align)
+	{
+		if(!align)
+			align="right";
+
+		var newCell=tblRow.insertCell(-1);
+		newCell.align=align;
+		newCell.innerHTML=html;
+	};
+
+	// We have a TBODY for each feed, not TRACKER
+	var tbody=document.createElement("tbody");
+
+	tbody.innerHTML=
+		"<tr><th colspan='5' align='left'>"
+		+feed.name+
+		"</th></tr>";
+
+		
+
+	feed.tracker.forEach(function (tracker)
+	{
+		tracker.lineStyle.strokeColor = FEEDS.trackColor[++trackerIx];
+		var osMapPoints = new Array();
+		
+		// Define additional variable to store whether to display all tracks
+		if(!tracker.trackMsgs)
+			tracker.trackMsgs="show";	// Default: Hide non-latest
+
+		tbody.insertRow(-1).innerHTML=
+			"<th colspan='5' align='left'>"
+			+tracker.name+
+			"</th>"+
+			"<td colspan='2' alight='right' bgcolor='"
+			+ tracker.lineStyle.strokeColor + "'>"
+			+ (tracker.status ? tracker.status : "")
+			+"</td>";
+
+		// First we count the number of TRACK messages if hiding them
+		var trackMsgCount=-1;
+		if("hide"==tracker.trackMsgs)
+		{
+			trackMsgCount=0;
+			for(var msgIx=0; msgIx<tracker.message.length; msgIx++)
+				if(tracker.message[msgIx].isTrack())
+					trackMsgCount++;
+		}
+
+		//Messages are already in reverse Chronological order
+		for(var msgIx=0; msgIx<tracker.message.length; msgIx++)
+		{
+			var message=tracker.message[msgIx];
+
+			var osgb=message.getOSGB();
+
+			osMapPoints.push(osgb.getOpenLayersGeometryPoint());
+			
+			var row=tbody.insertRow(-1);
+			row.title=message.type;
+			row.id = JSON.stringify
+			({
+				feedType	: feed.type,
+				feedId		: feed.id,
+				trackerId	: tracker.id,
+				messageIx	: msgIx
+			});
+			row.onmouseenter = function()
+			{
+				var id	= JSON.parse(this.id);
+				document.getElementById(this.id).style.backgroundColor = "grey";
+				FEEDS.getFeed(id.feedType, id.feedId).getTracker(id.trackerId).message[id.messageIx].openSpaceShow();
+			};
+			row.onmouseleave = function()
+			{
+				var id = JSON.parse(this.id);
+				document.getElementById(this.id).style.backgroundColor = "white";
+				FEEDS.getFeed(id.feedType, id.feedId).getTracker(id.trackerId).message[id.messageIx].openSpaceHide();
+			};
+
+			insertCell(row,DAYS[message.time.getDay()]);
+			insertCell(row,message.time.toLocaleTimeString());
+			insertCell(row,message.battery ? "<img src='battery_"+message.battery+".png'>" : "");
+			if(message.latitude && message.longitude)
+				insertCell(row,"<a href='javascript:osMap.setCenter(new OpenSpace.MapPoint("
+					+ osgb.eastings + "," + osgb.northings + "))'>"
+					+ osgb.getGridRef(3)+"</a>");
+			else
+				insertCell(row,"");
+
+			if(tracker.message.length-1 > msgIx)
+			{
+				// Reverse chronological order, hence previous in time
+				// is next in the array
+				var previousMessage=tracker.message[msgIx+1];
+
+				// Speed
+				// km/s =           dist(km) /  time(s)
+				// km/h = 3600    * dist(km) / (time(ms) / 1000) 
+				// km/h = 3600000 * dist(km) / time(ms) 
+				insertCell(row,(
+					3600000*message.getDistance(previousMessage) /
+					(message.time.getTime()-previousMessage.time.getTime())
+					).toFixed(1)+" km/h");
+
+				insertCell(row,
+					previousMessage.getHeading(message).toFixed(0)
+					+" deg");
+			}
+			else
+			{
+				row.insertCell(-1);
+				row.insertCell(-1);
+			}
+
+			if(message.isTrack())
+			{
+				var url =
+					"<a href='javascript:FEEDS.trackMsgDisplay(\""
+					+ feed.type		+ "\",\""
+					+ feed.id		+ "\",\""
+					+ tracker.id	+ "\",\"";
+				if("hide"==tracker.trackMsgs)
+				{
+					if(0==trackMsgCount)
+						row.style.display="none";	// Hidden row
+					else
+					{
+						insertCell(row, url + "show\");'><i>("+(trackMsgCount-1)+" hidden)</i></a>","left");
+						trackMsgCount=0;
+					}
+				}
+				else
+					insertCell(row, url + "hide\");'><i>(hide old)</i></a>","left");
+			}
+			else
+				insertCell(row,message.type,"left");
+			
+		}
+		var lineString = new OpenLayers.Geometry.LineString(osMapPoints);
+		var lineFeature = new OpenLayers.Feature.Vector(lineString, null, tracker.lineStyle);
+		osMap.getVectorLayer().addFeatures([lineFeature]);
+	});
+
+	tbody.id = JSON.stringify
+	({
+		feedType	: feed.type,
+		feedId		: feed.id
+	});
+	
+	// Now paste the tbody over the existing TBODY
+	var table		= document.getElementById("tblMessages");
+	var tableBody	= document.getElementById(tbody.id);
+	
+	if(tableBody)
+		table.replaceChild(tbody, tableBody);
+	else
+		table.appendChild(tbody);
+
+	// Update the timestamp
+	console.log(FEEDS);
+	document.getElementById("updateTimestamp").innerHTML=
+		FEEDS.feed[0].lastUpdated.toLocaleTimeString() + " " +
+		DAYS[FEEDS.feed[0].lastUpdated.getDay()]       + " " +
+		FEEDS.feed[0].lastUpdated.toLocaleDateString();
+
+	// Reset the auto update timer
+	FEEDS.updateTimer();
+}
+
+// This function sets the displayability of the trackMsgs
+// hide=hide all bar latest
+// show=show all
+FEEDS.trackMsgDisplay=function(feedType, feedId, trackerId, trackMsgs)
+{
+	var feed=FEEDS.getFeed(feedType, feedId);
+	feed.getTracker(trackerId).trackMsgs=trackMsgs;
+	feed.onUpdate(feed);
+}
+
+
+// Global osMap variable
+osMap = null;
+
+
+
+// vim: ts=2:sw=2

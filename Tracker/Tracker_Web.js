@@ -61,7 +61,6 @@ var DAYS=new Array("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
 FEEDS.addFromURI();
 
 // Get the data once document is fully loaded
-document.onload = FEEDS.refresh();
-
+document.onload = FEEDS.init();
 
 // vim: ts=2:sw=2

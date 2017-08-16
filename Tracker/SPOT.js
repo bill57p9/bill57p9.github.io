@@ -10,7 +10,7 @@ function SPOT_TRACKER(message)
 }
 
 
-SPOT_TRACKER.protoype = new TRACKER();
+SPOT_TRACKER.prototype = new TRACKER();
 SPOT_TRACKER.prototype.constructor = SPOT_TRACKER;
 
 // SPOT_MESSAGE represents a single SPOT message

@@ -62,7 +62,38 @@ GT_WGS84.prototype.getHeading=function(that)
 	return hdg;
 }
 
-
+// Get central location from the array of GT_WGS84s
+GT_WGS84.prototype.getCentre = function(coords)
+{
+	var x			= new GT_WGS84;
+	var valid		= 
+	{
+		"latlng"	: 0,
+		"altitude"	: 0
+	};
+	x.latitude		= 0;
+	x.longitude		= 0;
+	coords.forEach(function (coord)
+	{
+		if(null != coord.latitude && null != coord.latitude)
+		{
+			x.latitude	+= coord.latitude ;
+			x.longitude	+= coord.longitude;
+			++valid.latlng;
+		}
+		if(null != coord.altitude)
+		{
+			x.altitude += coord.altitude;
+			++valid.altitude;
+		}
+	});
+	x.latitude		/= valid.latlng;
+	x.longitude		/= valid.latlng;
+	if(valid.altitude)
+		x.altitude	/= valid.altitude;
+	
+	return x;
+}
 
 // Generic FEED object
 // within each type, id must be unique
@@ -156,6 +187,9 @@ FEEDS.addFeed = function(type, parameter)
 	});
 	return false;
 }
+
+// Initialisation function
+FEEDS.init = function() { this.refresh(); };
 
 // Refresh all feeds
 FEEDS.refresh = function()

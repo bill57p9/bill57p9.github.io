@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+	<body onresize="FEEDS.resize()">
+		<script type="text/javascript" src="https://openspace.ordnancesurvey.co.uk/osmapapi/openspace.js?key=7C059910369F97E5E0405F0AF1604F48"></script>
+		<script type= "text/javascript" src="https://openspace.ordnancesurvey.co.uk/osmapapi/script/mapbuilder/basicmap.js"></script>
+		<script type= "text/javascript" src="https://openspace.ordnancesurvey.co.uk/osmapapi/script/mapbuilder/searchbox.js"></script>
+
+		<script language="javascript" src="geotools.min.js"> </script>
+		<script language="javascript" src="J50Npi.min.js"> </script>
+		<script language="javascript" src="Tracker.js"> </script>
+		<script language="javascript" src="SPOT.js"> </script>
+		<script language="javascript" src="lkgps.js"> </script>
+		<script language="javascript" src="Tracker_Web_OSOpenSpace.js"> </script>
+		<script language="javascript" src="Tracker_Web.js"> </script>
+
+		<div id="all" style="width: 100%; overflow: hidden;">
+			<div
+				id		= "map"
+				style	= "width: 540px; height: 440px; float: left; border: 1px solid black;"></div>
+			<div
+				id		= "divMessages" >
+				<!--style	= "margin-left: 560px; border: 1px solid black; width: 380px;"-->
+		<!--div id="map" style="border: 1px solid black; width:540px; height:440px;"></div-->
+
+		<h1 id="title"></h1>
+		<table id="tblMessages">
+			<!--thead>
+				<tr>
+					<th colspan='2'>Timestamp</th>
+					<th></th>
+					<th>Location</th>
+					<th>Message</th>
+				</tr>
+				</thead-->
+		</table>
+		<hr/>
+		<table id="updateTimes">
+			<tr>
+				<td>Last Updated</td>
+				<td id="updateTimestamp"></td>
+			</tr>
+			<tr>
+				<td rowspan='3'>Update</td>
+				<td><a href='javascript:FEEDS.refresh()'>Now</a></td>
+			</tr>
+			<tr>
+				<td>
+					<select id="updateInterval" onchange="SPOT_FEEDS.updateTimer()">
+						<option value="0">Manual only</option>
+						<!--option value="1">Every minute</option-->
+						<option value=  "3">After 3 minutes</option>
+						<option value=  "5">After 5 minutes</option>
+						<option value= "10">After 10 minutes</option>
+						<option value= "15">After 15 minutes</option>
+						<option value= "20">After 20 minutes</option>
+						<option value= "30">After 30 minutes</option>
+						<option value= "60">After 1 hour</option>
+						<option value= "90">After 90 minutes</option>
+						<option value="120">After 2 hours</option>
+						<option value="240">After 4 hours</option>
+						<option value="720">After 12 hours</option>
+						<option value="1440">After 1 day</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href='javascript:FEEDS.getHistory()'>Get Earlier Data</a>
+					<a href='javascript:initmapbuilder()'>Map</a>
+				</td>
+			</tr>
+		</table>
+</div>
+</div>
+	</body>
+</html>
+
+<!-- vim: ts=2:sw=2
+-->
