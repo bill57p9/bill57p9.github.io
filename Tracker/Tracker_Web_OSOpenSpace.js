@@ -94,9 +94,15 @@ FEEDS.resize = function()
 	{
 		// Portrait, map on top
 		map.style.width		= (window.innerWidth  -  20)+"px";
-		map.style.height	= (window.innerWidth  -  20)+"px";
+		map.style.height	=
+		(
+			(window.innerWidth < window.innerHeight)	? window.innerWidth  -  20
+														: window.innerHeight - 200
+		)+"px";
 		tbl.style.marginLeft= null;		
 	}
+	if(osMap)
+		osMap.updateSize();
 }
 
 
@@ -113,7 +119,7 @@ FEED.prototype.onUpdate = function(feed)
 		//configure map options (basicmap.js)
 		setglobaloptions();
 		// add a box displaying co-ordinates (mouse over map to display) 
-		makegrid();
+		//makegrid();
 	}
 	
 	// Loop through all latest message on all trackers & all feeds to build up an array of latest positions, to get average
@@ -128,11 +134,11 @@ FEED.prototype.onUpdate = function(feed)
 		});
 	});
 
-	
+	console.log(new GT_WGS84().getCentre(trackerPosns));
 	//set the center of the map and the zoom level
-	osMap.setCenter(new GT_WGS84().getCentre(trackerPosns).getOSGB().getOpenSpaceMapPoint(), 7);
+	if(trackerPosns.length > 0)
+		osMap.setCenter(new GT_WGS84().getCentre(trackerPosns).getOSGB().getOpenSpaceMapPoint(), 7);
 
-	console.log(feed);
 	var insertCell=function(tblRow, html, align)
 	{
 		if(!align)

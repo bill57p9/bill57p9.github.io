@@ -75,15 +75,18 @@ GT_WGS84.prototype.getCentre = function(coords)
 	x.longitude		= 0;
 	coords.forEach(function (coord)
 	{
-		if(null != coord.latitude && null != coord.latitude)
+		var latitude	= Number(coord.latitude );
+		var longitude	= Number(coord.longitude);
+		var altitude	= Number(coord.altitude );
+		if(longitude && latitude)
 		{
-			x.latitude	+= coord.latitude ;
-			x.longitude	+= coord.longitude;
+			x.latitude	+= latitude ;
+			x.longitude	+= longitude;
 			++valid.latlng;
 		}
-		if(null != coord.altitude)
+		if(altitude)
 		{
-			x.altitude += coord.altitude;
+			x.altitude += altitude;
 			++valid.altitude;
 		}
 	});
