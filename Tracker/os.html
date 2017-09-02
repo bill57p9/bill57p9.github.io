@@ -37,17 +37,19 @@
 				</tr>
 				</thead-->
 		</table>
-		<hr/>
+		</div>
+		<div id = "divUpdate">
 		<table id="updateTimes">
 			<tr>
-				<td>Last Updated</td>
-				<td id="updateTimestamp"></td>
+				<td>Start Time</td>
+				<td colspan='3'><input id = "startTime" type = "datetime-local"/></td>
 			</tr>
 			<tr>
-				<td rowspan='3'>Update</td>
-				<td><a href='javascript:FEEDS.refresh()'>Now</a></td>
+				<td>End Time</td>
+				<td colspan='3'><input id="endTime" type="datetime-local"/></td>
 			</tr>
 			<tr>
+				<td><a href='javascript:FEEDS.refresh()'>Update</a></td>
 				<td>
 					<select id="updateInterval" onchange="SPOT_FEEDS.updateTimer()">
 						<option value="0">Manual only</option>
@@ -66,15 +68,17 @@
 						<option value="1440">After 1 day</option>
 					</select>
 				</td>
+				<td/>
+				<td>Last</td>
+				<td id="updateTimestamp"></td>
 			</tr>
-			<tr>
+			<!--tr>
 				<td>
 					<a href='javascript:FEEDS.getHistory()'>Get Earlier Data</a>
-					<a href='javascript:initmapbuilder()'>Map</a>
 				</td>
-			</tr>
+			</tr-->
 		</table>
-</div>
+		</div>
 </div>
 	</body>
 </html>

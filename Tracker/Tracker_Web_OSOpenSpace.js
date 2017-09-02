@@ -82,6 +82,7 @@ FEEDS.resize = function()
 {
 	var map = document.getElementById("map");
 	var tbl = document.getElementById("divMessages");
+	var upd = document.getElementById("divUpdate");
 	
 	if(window.innerWidth > window.innerHeight && window.innerWidth > 900)
 	{
@@ -89,6 +90,12 @@ FEEDS.resize = function()
 		map.style.width		= (window.innerWidth  - 420)+"px";
 		map.style.height	= (window.innerHeight -  20)+"px";
 		tbl.style.marginLeft= map.style.width + 30;
+		tbl.style.overflowY	= 'scroll';
+		tbl.style.height	= (window.innerHeight - 100)+"px";
+		upd.style.position	= 'absolute';
+		upd.style.bottom	= '10px';
+		upd.style.right		= '0px';
+		upd.style.width		= '390px';
 	}
 	else
 	{
@@ -99,8 +106,12 @@ FEEDS.resize = function()
 			(window.innerWidth < window.innerHeight)	? window.innerWidth  -  20
 														: window.innerHeight - 200
 		)+"px";
-		tbl.style.marginLeft= null;		
+		tbl.style.marginLeft= null;	
+		tbl.style.height	= 'auto';
+		upd.style.bottom	= null;
+		upd.style.position	= 'static';
 	}
+	
 	if(osMap)
 		osMap.updateSize();
 }
@@ -137,7 +148,7 @@ FEED.prototype.onUpdate = function(feed)
 	console.log(new GT_WGS84().getCentre(trackerPosns));
 	//set the center of the map and the zoom level
 	if(trackerPosns.length > 0)
-		osMap.setCenter(new GT_WGS84().getCentre(trackerPosns).getOSGB().getOpenSpaceMapPoint(), 7);
+		osMap.setCenter(new GT_WGS84().getCentre(trackerPosns).getOSGB().getOpenSpaceMapPoint(), 8);
 
 	var insertCell=function(tblRow, html, align)
 	{
@@ -166,7 +177,7 @@ FEED.prototype.onUpdate = function(feed)
 		
 		// Define additional variable to store whether to display all tracks
 		if(!tracker.trackMsgs)
-			tracker.trackMsgs="show";	// Default: Hide non-latest
+			tracker.trackMsgs="hide";	// Default: Hide non-latest
 
 		tbody.insertRow(-1).innerHTML=
 			"<th colspan='5' align='left'>"
@@ -300,9 +311,8 @@ FEED.prototype.onUpdate = function(feed)
 	// Update the timestamp
 	console.log(FEEDS);
 	document.getElementById("updateTimestamp").innerHTML=
-		FEEDS.feed[0].lastUpdated.toLocaleTimeString() + " " +
 		DAYS[FEEDS.feed[0].lastUpdated.getDay()]       + " " +
-		FEEDS.feed[0].lastUpdated.toLocaleDateString();
+		FEEDS.feed[0].lastUpdated.toLocaleTimeString() ;
 
 	// Reset the auto update timer
 	FEEDS.updateTimer();

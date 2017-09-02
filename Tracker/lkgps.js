@@ -150,7 +150,7 @@ LKGPS_TRACKER.prototype.getTrack	= function(startDate, endDate, callback)
 	// Default start is 0300L this morning
 	if(!startDate)
 	{
-		startDate = new Date();
+		startDate = new Date("2017-08-20 00:00:00");
 		// Subtract a day for anything prior to 0500L
 		if(startDate.getHours() < 5)
 			startDate.setTime(startDate.getTime() - (24 * 60 * 60 * 1000));
