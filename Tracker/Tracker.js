@@ -84,7 +84,7 @@ GT_WGS84.prototype.getCentre = function(coords)
 			x.longitude	+= longitude;
 			++valid.latlng;
 		}
-		if(altitude)
+		if(! null == altitude)
 		{
 			x.altitude += altitude;
 			++valid.altitude;
@@ -98,6 +98,54 @@ GT_WGS84.prototype.getCentre = function(coords)
 	return x;
 }
 
+GT_WGS84.prototype.isValid = function()
+{
+	return
+		this.latitude	< -90 ||
+		this.latitude	>  90 ||
+		this.longitude	<   0 ||
+		this.longitude	> 180
+		? false : true
+};
+
+// Get JSON LOCAL format timestamp
+Date.prototype.getJSONlocal = function()
+{
+	// Pad string to given length
+	var pad = function(inStr, length)
+	{
+		var outStr		= new String(inStr);
+		while(outStr.length	< length)
+			outStr			= "0" + outStr;
+		return outStr;
+	};
+	
+	// Convert minutes to +/-hhmm format
+	var min2hhmm	= function(minutes)
+	{
+		var hours	= Math.floor(minutes/60);
+		
+		return	(minutes < 0 ? "-" : "+") +
+				pad(Math.abs(hours)					,2) +
+				pad(Math.abs(minutes - (hours*60))	,2);
+	}
+	
+	// Get TZ offset as hours (float), always >0
+	var tz		= Math.abs(this.getTimezoneOffset())/60;
+	
+	// Convert to local time string
+	var jsonDate= 
+		pad( this.getFullYear()		,4)	+ "-" +
+		pad((this.getMonth() + 1)	,2)	+ "-" +
+		pad( this.getDate()			,2)	+ "T" +
+		pad( this.getHours()		,2)	+ ":" +
+		pad( this.getMinutes()		,2) + "." +
+		pad( this.getMilliseconds()	,3) +
+		min2hhmm(this.getTimezoneOffset());
+	
+	return jsonDate;
+}
+
 // Generic FEED object
 // within each type, id must be unique
 function FEED() { this.tracker	= new Array(); }
@@ -109,6 +157,8 @@ FEED.prototype.latestMessage	= null;
 FEED.prototype.earliestMessage	= null;
 FEED.prototype.lastUpdated		= null;
 FEED.prototype.json				= {};
+FEED.prototype.startDate		= null;
+FEED.prototype.endDate			= null;
 FEED.prototype.onUpdate			= function(){};
 FEED.prototype.getTracker		= function(id)
 {
@@ -118,7 +168,63 @@ FEED.prototype.getTracker		= function(id)
 			return this.tracker[fed];
 	}
 	return null;
-};	
+};
+// Deal with top level functionality, such as ensuring startDate & endDate are sensible,
+// then call .getFeedMessages	
+FEED.prototype.getMessages		= function(startDate, endDate, callback)
+{
+	this.endDate = endDate ? new Date(endDate) : null;
+	
+	if(startDate)
+		this.startDate = new Date(startDate);		
+	else	// startDate not pre-defined
+	{
+		if(this.lastUpdated)
+			this.startDate = this.lastUpdated;	// Get since last Update
+		else if(!this.startDate)
+		{
+			// Default is 0300L this morning (0300L yesterday if before 0500L)
+			this.startDate = new Date();
+			// Subtract a day for anything prior to 0500L
+			if(this.startDate.getHours() < 5)
+				this.startDate.setTime(this.startDate.getTime() - (24 * 60 * 60 * 1000));
+			this.startDate.setMilliseconds(0);
+			this.startDate.setSeconds(0);
+			this.startDate.setMinutes(0);
+			this.startDate.setHours(3);
+		}
+	}
+	
+	// Filter obsolete messages
+	var feed = this;
+	this.tracker.forEach(function(tracker)
+	{
+		if(tracker.message.length && startDate)
+		{
+			// Oldest messages will always be at the end
+			while(tracker.message[tracker.message.length-1].time < feed.startDate)
+				tracker.message.pop();
+		}
+			
+		if(tracker.message.length && endDate)
+			// Newest messages will always be at the front
+			while(tracker.message[0].time > feed.endDate)
+				tracker.message.shift();
+	});
+
+	this.lastUpdated=new Date();	// Simple timestamp of when we last tried an update
+	
+	// Call underlying get function
+	this.getFeedMessages(this.startDate, this.endDate, callback);
+};
+FEED.prototype.getFeedMessages	= function(startDate, endDate, callback)
+{
+	// Update all trackers within feed
+	this.tracker.forEach( function (tracker)
+	{
+		tracker.getMessages(startDate, endDate, callback);	
+	});
+};
 
 // Generic TRACKER object
 function TRACKER()
@@ -133,6 +239,48 @@ TRACKER.prototype.messageSort = function ()
 {
 	this.message.sort(function (a,b) { return (b.time - a.time); });
 };
+// Get Ozi PLT file
+// PLT files are single track, hence implemented at TRACKER level
+TRACKER.prototype.getOziPlt = function(trackColour)
+{
+	var plt = "";
+	var points = 0;
+	
+	if(!trackColour)
+		trackColour = "255";
+	
+	// Messages are latest first, so we build file backwards
+	this.message.forEach(function (message)
+	{
+		if(message.hasLocation())
+		{
+			var tDateTime	= 25568+(message.time.UTC/86400);		// TDateTime 25568 is 01/01/1970 0000Z
+			var altitude	= -777;		// = not valid
+			if(message.hasAltitude())
+				altitude	= 3.2808*message.altitude;		// in feet
+			
+			// latitude, longitude, 0=contiguous track, altitude_ft (-777 = not valid), TDateTime, Date_str, Time_str
+			plt = 
+				message.latitude.toString()	+ "," +
+				message.longitude.toString()+ "," +
+				"0," + altitude.toString()	+ "," +
+				tDateTime.toString()		+ "," +
+				message.time.toLocaleDateString()	+ "," +
+				message.time.toLocaleTimeString() + plt;
+			++points;
+		}
+	});
+
+	plt =
+		"OziExplorer Track Point File Version 2.1\r\n" +
+		"WGS 84\r\n" +
+		"Altitude is in Feet\r\n" +
+		"Reserved 3\r\n" +
+		"0,1," + trackColour + "," + this.name + ",0,0,2," + trackColour + "\r\n" +
+		points.toString() + "\r\n" + plt;
+
+	return plt;
+};
 
 // TRACKER_MESSAGE represents a single TRACKER message
 // It inherits from GT_WGS84 to give geo (& OSGB) functionality
@@ -143,13 +291,21 @@ TRACKER_MESSAGE.prototype.id		= null;
 TRACKER_MESSAGE.prototype.type		= "TRACK";
 TRACKER_MESSAGE.prototype.time		= null;
 TRACKER_MESSAGE.prototype.battery	= "";
-TRACKER_MESSAGE.prototype.latitude	= 0;
-TRACKER_MESSAGE.prototype.longitude	= 0;
+TRACKER_MESSAGE.prototype.latitude	= 180;
+TRACKER_MESSAGE.prototype.longitude	= 180;
 TRACKER_MESSAGE.prototype.isTrack	= function()
 {
 	if("TRACK" == this.type)
 		return true;
 	return false;
+};
+TRACKER_MESSAGE.prototype.hasLocation = function()
+{
+	return this.isValid;
+};
+TRACKER_MESSAGE.prototype.hasAltitude = function()
+{
+	return (null != this.altitude);
 };
 
 // FEEDS is a global array of FEEDs, to allow callbacks
@@ -191,18 +347,109 @@ FEEDS.addFeed = function(type, parameter)
 	return false;
 }
 
-// Initialisation function
-FEEDS.init = function() { this.refresh(); };
-
-// Refresh all feeds
-FEEDS.refresh = function()
+// get messages for all feeds
+FEEDS.getMessages = function(startDate, endDate)
 {
 	for(var ix=0; ix<FEEDS.feed.length; ix++)
 	{
 		console.log(FEEDS.feed[ix]);
-		FEEDS.feed[ix].update(FEEDS.feed[ix].onUpdate);
+		FEEDS.feed[ix].getMessages(startDate, endDate, FEEDS.feed[ix].onUpdate);
 	}
 }
+
+// Returns KML file of all feeds/trackers
+FEEDS.getKml = function()
+{
+	if(FEEDS.feed[0].endDate)
+		var txt = FEEDS.feed[0].endDate.toLocaleString();
+	else
+		var txt = FEEDS.feed[0].lastUpdated.toLocaleString();
+	
+	// File Header string
+	txt =
+		"<?xml version='1.0' encoding='UTF-8'?>\r\n" +
+		"<kml xmlns='http://www.opengis.net/kml/2.2'>\r\n"	+
+		"\t<Document>\r\n" +
+		"\t\t<name>Tracker</name>\r\n"	+
+		"\t\t<description>Tracker data from " + FEEDS.feed[0].startDate.toLocaleString() +
+		"to " + txt + "</description>\r\n";
+		
+	FEEDS.feed.forEach(function (feed)
+	{
+		feed.tracker.forEach(function (tracker)
+		{
+			txt +=
+				"\t\t<placemark>\r\n" +
+				"\t\t\t<name>" + tracker.name + "</name>\r\n" +
+				"\t\t\t<linestring>\r\n" +
+				"\t\t\t\t<coordinates>\r\n";	// TODO: Style
+			tracker.message.forEach( function (message)
+			{
+				if(message.hasLocation())
+					txt	+= "\t\t\t\t\t"
+						+ message.latitude.toString()  + ","
+						+ message.longitude.toString() + ",\r\n";  //TODO: Altitude
+			});
+			txt +=
+				"\t\t\t\t</coordinates>\r\n" +
+				"\t\t\t</linestring>\r\n" +
+				"\t\t</placemark>\r\n";
+		});
+	});
+	txt +=
+		"\t</Document>\r\n" +
+		"</kml>\r\n" ;
+		
+	return txt;
+};
+
+// Returns GPX file of all feeds/trackers
+FEEDS.getGpx = function()
+{
+	if(FEEDS.feed[0].endDate)
+		var txt = FEEDS.feed[0].endDate.toLocaleString();
+	else
+		var txt = FEEDS.feed[0].lastUpdated.toLocaleString();
+
+	// File Header string
+	var txt =
+		"<?xml version='1.0' encoding='UTF-8'?>\r\n" +
+		"<gpx xmlns='http://www.topografix.com/GPX/1/1'>\r\n"	+
+		"\t<metadata>\r\n" +
+		"\t\t<text>Tracker data from " + FEEDS.feed[0].startDate.toLocaleString() +
+		"to " + txt + "</text>\r\n" +
+		"\t</metadata>\r\n" ; // TODO: MetaData. Example has link
+		
+	FEEDS.feed.forEach(function (feed)
+	{
+		feed.tracker.forEach(function (tracker)
+		{
+			txt +=
+				"\t<trk>\r\n" +
+				"\t\t<name>" + tracker.name + "</name>\r\n" +
+				"\t\t<trkseg>\r\n" ;
+			tracker.message.forEach( function (message)
+			{
+				if(message.hasLocation())
+				{
+					txt	+= "\t\t\t<trkpt" 
+						+ " latitude='"			+ message.latitude.toString()	+ "' "
+						+ " longitude='"		+ message.longitude.toString()	+ "'";
+					if(message.hasAltitude())
+						txt += " altitude='"	+ message.altitude.toString()	+ "'";
+					txt += ">/r/n"
+						+  "\t\t\t</trkpt>\r\n";
+				}
+			});
+			txt +=
+				"\t\t</trkseg>\r\n" +
+				"\t</trk>\r\n";
+		});
+	});
+	txt += "</gpx>\r\n" ;
+		
+	return txt;
+};
 
 // Return URI query parameters as an array of Key Value pairs
 FEEDS.getURIParameters = function()

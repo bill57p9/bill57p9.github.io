@@ -167,20 +167,8 @@ LKGPS_TRACKER.prototype.getTrack	= function(startDate, endDate, callback)
 	//this.ApiTrack.onSuccess = callback;
 	this.ApiTrack.get("StartTime=" + startDate.toJSON().substr(0,19) + "&EndTime=" + endDate.toJSON().substr(0,19), callback, this);
 };
-LKGPS_TRACKER.prototype.update		= function(callback, previous)
+LKGPS_TRACKER.prototype.getMessages		= function(startDate, endDate, callback)
 {
-	var startDate	= null;
-	var endDate		= null;
-
-	if(previous)
-	{
-		// historical request. Go back a day??
-		endDate = new Date (this.earliestMessage.getTime()-1000);
-		startDate = new Date (endDate.getTime - (24*60*60*1000));
-	}
-	else if(this.latestMessage) // Update - Anything AFTER latestMessage
-		startDate = new Date (this.latestMessage.getTime()+1000);
-
 	// Record callback
 	this.updateCallback = callback;
 	
@@ -195,7 +183,6 @@ LKGPS_TRACKER.prototype.update		= function(callback, previous)
 };
 
 
-
 // LK-GPS_FEED object - inherits from FEED object
 function LKGPS_FEED(id)
 {
@@ -207,13 +194,6 @@ LKGPS_FEED.prototype = new FEED();
 LKGPS_FEED.prototype.constructor = LKGPS_FEED;
 LKGPS_FEED.prototype.type		= "LKGPS";
 LKGPS_FEED.prototype.host		= "http://www.lkgps.net:8080";
-LKGPS_FEED.prototype.update		= function(callback, previous)
-{
-	this.lastUpdated=new Date();	// Simple timestamp of when we last tried an update
-	// Update all trackers, though usually only 1
-	for(var ix=0; ix<this.tracker.length ; ix++)
-		this.tracker[ix].update(callback);	
-};
 
 
 // ZG666GPS is a derivative of LKGPS: Same API, etc

@@ -19,24 +19,6 @@ TRACKER.prototype.lineStyle =
 };
 
 
-FEEDS.trackColor = 
-[
-	"#0000CC",
-	"#00CC00",
-	"#00CCCC",
-	"#CC0000",
-	"#CC00CC",
-	"#CCCC00",
-	"#CCCCCC",
-	"#000066",
-	"#006600",
-	"#006666",
-	"#660000",
-	"#660066",
-	"#666600",
-	"#666666"
-];
-
 
 // Show/hide a marker for a particular message location
 TRACKER_MESSAGE.prototype.openSpaceMarker = 
@@ -132,10 +114,9 @@ FEED.prototype.onUpdate = function(feed)
 		// add a box displaying co-ordinates (mouse over map to display) 
 		//makegrid();
 	}
-	
+
 	// Loop through all latest message on all trackers & all feeds to build up an array of latest positions, to get average
 	var trackerPosns = new Array();
-	var trackerIx = 0;
 	FEEDS.feed.forEach(function(feed)
 	{
 		feed.tracker.forEach(function(tracker)
@@ -145,11 +126,24 @@ FEED.prototype.onUpdate = function(feed)
 		});
 	});
 
-	console.log(new GT_WGS84().getCentre(trackerPosns));
-	//set the center of the map and the zoom level
 	if(trackerPosns.length > 0)
-		osMap.setCenter(new GT_WGS84().getCentre(trackerPosns).getOSGB().getOpenSpaceMapPoint(), 8);
+	{
+		// Identify centre & range (max distance to tracker)
+		var trackerCentre	= new GT_WGS84().getCentre(trackerPosns);
+		var trackerRange	= 0;
+		trackerPosns.forEach(function(trackerPosn)
+		{
+			var trackerDistance = trackerCentre.getDistance(trackerPosn);
+			if(trackerDistance > trackerRange)
+				trackerRange = trackerDistance;
+		});
+		//set the center of the map and the zoom level
+		osMap.setCenter(trackerCentre.getOSGB().getOpenSpaceMapPoint(), 8);
+		
+		// TODO: keep current ZOOM LEVEL if set
+	}
 
+	
 	var insertCell=function(tblRow, html, align)
 	{
 		if(!align)
@@ -168,25 +162,34 @@ FEED.prototype.onUpdate = function(feed)
 		+feed.name+
 		"</th></tr>";
 
-		
 
-	feed.tracker.forEach(function (tracker)
+	feed.tracker.forEach(function(tracker)
 	{
-		tracker.lineStyle.strokeColor = FEEDS.trackColor[++trackerIx];
+		// Define track Colour if not already done
+		if(TRACKER.prototype.lineStyle.strokeColor == tracker.lineStyle.strokeColor)
+			tracker.lineStyle.strokeColor = FEEDS.trackColor[FEEDS.trackerCount++];
+
 		var osMapPoints = new Array();
 		
 		// Define additional variable to store whether to display all tracks
 		if(!tracker.trackMsgs)
 			tracker.trackMsgs="hide";	// Default: Hide non-latest
 
-		tbody.insertRow(-1).innerHTML=
-			"<th colspan='5' align='left'>"
-			+tracker.name+
-			"</th>"+
-			"<td colspan='2' alight='right' bgcolor='"
+		tbody.insertRow(-1).innerHTML
+			= "<th colspan='5' align='left'>"
+			+ "<a id='" + JSON.stringify
+			({
+				feedType	: feed.type,
+				feedId		: feed.id,
+				trackerId	: tracker.id
+			})
+			+ "'>"
+			+ tracker.name
+			+ "</a></th>"
+			+ "<td colspan='2' alight='right' bgcolor='"
 			+ tracker.lineStyle.strokeColor + "'>"
 			+ (tracker.status ? tracker.status : "")
-			+"</td>";
+			+ "</td>";
 
 		// First we count the number of TRACK messages if hiding them
 		var trackMsgCount=-1;
@@ -286,10 +289,10 @@ FEED.prototype.onUpdate = function(feed)
 			}
 			else
 				insertCell(row,message.type,"left");
-			
 		}
-		var lineString = new OpenLayers.Geometry.LineString(osMapPoints);
+		var lineString	= new OpenLayers.Geometry.LineString(osMapPoints);
 		var lineFeature = new OpenLayers.Feature.Vector(lineString, null, tracker.lineStyle);
+		console.log(tracker.lineStyle);
 		osMap.getVectorLayer().addFeatures([lineFeature]);
 	});
 
@@ -309,10 +312,28 @@ FEED.prototype.onUpdate = function(feed)
 		table.appendChild(tbody);
 
 	// Update the timestamp
-	console.log(FEEDS);
 	document.getElementById("updateTimestamp").innerHTML=
 		DAYS[FEEDS.feed[0].lastUpdated.getDay()]       + " " +
 		FEEDS.feed[0].lastUpdated.toLocaleTimeString() ;
+
+	FEEDS.setDownloadLink("getKML", "Tracks.kml", "text/xml", FEEDS.getKml());
+	FEEDS.setDownloadLink("getGPX", "Tracks.gpx", "text/xml", FEEDS.getGpx());
+	FEEDS.feed.forEach(function(feed)
+	{
+		feed.tracker.forEach(function(tracker)
+		{
+			FEEDS.setDownloadLink
+			(
+				JSON.stringify
+				({
+					feedType	: feed.type,
+					feedId		: feed.id,
+					trackerId	: tracker.id
+				}), "Track.plt", "text/csv", tracker.getOziPlt(parseInt(tracker.lineStyle.strokeColor))
+			);
+		});
+	});
+
 
 	// Reset the auto update timer
 	FEEDS.updateTimer();
@@ -332,6 +353,6 @@ FEEDS.trackMsgDisplay=function(feedType, feedId, trackerId, trackMsgs)
 // Global osMap variable
 osMap = null;
 
-
+FEEDS.trackerCount = 0;
 
 // vim: ts=2:sw=2

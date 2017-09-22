@@ -50,23 +50,21 @@ function SPOT_FEED(id)
 			tracker.message.unshift(msg);
 		}
 	};
-	this.update = function(callback, previous)
+	this.getFeedMessages = function(startDate, endDate, callback)
 	{
-		var url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+this.id+"/message.json";
+		// Default endDate is 7 days after startDate
+		endDate = new Date(endDate ? endDate : startDate.getTime() + (7 * 24 * 60 * 60 * 1000))
+
+		var url="https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/"+ this.id
+			+ "/message.json?startDate=" + startDate.toJSON().substr(0,19)
+			+ "-0000&endDate=" + endDate.toJSON().substr(0,19) + "-0000";
+
+		console.log(url);
+
 		if(this.id == 0)	// handle sample JSON
 			url="sample/SPOT.jsonp";
 
-		// Add time filter
-		if(!previous && this.latestMessage)
-			url+="?startDate="
-				+ this.latestMessage.toJSON().substr(0,19)
-				+ "-0000" ;
-		if(previous && this.earliestMessage)
-			url+="?endDate="
-				+ this.earliestMessage.toJSON().substr(0,19)
-				+ "-0000" ;
 
-		console.log(url);
 		this.lastUpdated=new Date();
 		J50Npi.getJSON(url, this.json, function(json)
 		{

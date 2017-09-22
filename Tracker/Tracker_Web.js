@@ -1,18 +1,38 @@
-/////////////////////////////////////////
-//                                     //
-// ADD METHODS TO SPOT_MESSAGE OBJECTS //
-//                                     //
-/////////////////////////////////////////
-//
 
-// Get earlier data
-FEEDS.getHistory=function()
+
+// Set track colours
+FEEDS.trackColor =
+[
+	"#0000CC",
+	"#00CC00",
+	"#00CCCC",
+	"#CC0000",
+	"#CC00CC",
+	"#CCCC00",
+	"#CCCCCC",
+	"#000066",
+	"#006600",
+	"#006666",
+	"#660000",
+	"#660066",
+	"#666600",
+	"#666666"
+];
+
+
+
+// Call to refresh / update feed messages
+FEEDS.refresh=function()
 {
-// *******************************************************************************
-// Should this check for SPOT only???
-	for(var ix=0; ix<FEEDS.feed.length; ix++)
-		FEEDS.feed[ix].update(FEEDS.feed[ix].onUpdate, null, true);
-}
+	var startDate	= document.getElementById("startDate").value;
+	
+	// If startDate has NOT changed since last refresh, send NULL to get latest/default messages
+	if(startDate == FEEDS.feed[0].startDate)
+		startDate = null;
+	FEEDS.getMessages(startDate, document.getElementById("endDate").value);
+};
+
+
 
 FEEDS.updateTimeout=null;
 // This function sets the updateTimer
@@ -45,8 +65,31 @@ FEEDS.updateTimer=function()
 		else	 // Cover off getting a negative number
 			FEEDS.update();
 	}
-}
+};
 
+// Generic helper function to create Download links for IE & HTML5
+FEEDS.setDownloadLink = function(linkId, filename, format, content)
+{
+	link = document.getElementById(linkId);
+	if(link)
+	{
+		// Setting up the download link differs between IE & other browsers
+		if(window.navigator.msSaveOrOpenBlob)
+		{
+			// IE10+
+			link.onclick	= function()
+			{
+				window.navigator.msSaveOrOpenBlob(new Blob([content]), filename);
+			};
+		}
+		else
+		{
+			// HTML5 (e.g. Chrome)
+			link.download	= filename;
+			link.href		= "data:" + format +";charset=utf-8," + encodeURIComponent(content);
+		}
+	}
+};
 
 ////////////////////
 //                //
@@ -57,10 +100,22 @@ FEEDS.updateTimer=function()
 // Day of week -> Name conversion
 var DAYS=new Array("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
 
-// Get feeds
-FEEDS.addFromURI();
-
 // Get the data once document is fully loaded
-document.onload = FEEDS.init();
+window.onload = function()
+{
+	// Get feeds
+	FEEDS.addFromURI();
+
+	// Get startDate & endDate from query string
+	document.getElementById("startDate").value	= FEEDS.getURIParameter("startDate");
+	document.getElementById("endDate").value	= FEEDS.getURIParameter("endDate");
+
+	FEEDS.refresh();
+	
+
+
+	// Read back (default) startDate
+	document.getElementById("startDate").value	= FEEDS.feed[0].startDate.getJSONlocal().substr(0,16);
+}
 
 // vim: ts=2:sw=2
