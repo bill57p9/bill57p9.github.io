@@ -110,7 +110,7 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 	{
 		tracker.status = status.status;
 	}
-	if(alarms)
+	if(alarms.arr)
 		alarms.arr.forEach(function (alarm)
 		{
 			var message = new TRACKER_MESSAGE();	// Note generic message
