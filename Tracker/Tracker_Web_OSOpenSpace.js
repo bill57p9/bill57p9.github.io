@@ -10,15 +10,6 @@ GT_OSGB.prototype.getOpenSpaceMapPoint = function()
 }
 
 
-// Add OpenLayers Feature Style to TRACKER
-TRACKER.prototype.lineStyle = 
-{
-	strokeColor		: "#00CDCD",
-	strokeOpacity	: 0.5,
-	strokeWidth		: 4
-};
-
-
 
 // Show/hide a marker for a particular message location
 TRACKER_MESSAGE.prototype.openSpaceMarker = 
@@ -57,7 +48,6 @@ TRACKER_MESSAGE.prototype.openSpaceToggle = function()
 {
 	this.openSpaceMarker.obj ? this.openSpaceHide() : this.openSpaceShow();
 }
-
 
 // Set layout & sizes
 FEEDS.resize = function()
@@ -103,6 +93,8 @@ FEEDS.resize = function()
 // Separating this out makes it easier to cope with non-referesh updates
 FEED.prototype.onUpdate = function(feed)
 {
+	console.log(FEEDS);
+	
 	// initialise the map if required
 	if(!osMap)
 	{
@@ -137,10 +129,9 @@ FEED.prototype.onUpdate = function(feed)
 			if(trackerDistance > trackerRange)
 				trackerRange = trackerDistance;
 		});
-		//set the center of the map and the zoom level
-		osMap.setCenter(trackerCentre.getOSGB().getOpenSpaceMapPoint(), 8);
 		
-		// TODO: keep current ZOOM LEVEL if set
+		//set the center of the map and the zoom level
+		osMap.setCenter(trackerCentre.getOSGB().getOpenSpaceMapPoint(), osMap.zoom ? osMap.zoom : 8);
 	}
 
 	
@@ -165,9 +156,8 @@ FEED.prototype.onUpdate = function(feed)
 
 	feed.tracker.forEach(function(tracker)
 	{
-		// Define track Colour if not already done
-		if(TRACKER.prototype.lineStyle.strokeColor == tracker.lineStyle.strokeColor)
-			tracker.lineStyle.strokeColor = FEEDS.trackColor[FEEDS.trackerCount++];
+		if(!tracker.trackColour)
+			tracker.trackColour = FEEDS.trackerColour.shift();
 
 		var osMapPoints = new Array();
 		
@@ -186,8 +176,8 @@ FEED.prototype.onUpdate = function(feed)
 			+ "'>"
 			+ tracker.name
 			+ "</a></th>"
-			+ "<td colspan='2' alight='right' bgcolor='"
-			+ tracker.lineStyle.strokeColor + "'>"
+			+ "<td colspan='2' alight='right' bgcolor='#"
+			+ tracker.trackColourRGB() + "'>"
 			+ (tracker.status ? tracker.status : "")
 			+ "</td>";
 
@@ -238,7 +228,7 @@ FEED.prototype.onUpdate = function(feed)
 			if(message.latitude && message.longitude)
 				insertCell(row,"<a href='javascript:osMap.setCenter(new OpenSpace.MapPoint("
 					+ osgb.eastings + "," + osgb.northings + "))'>"
-					+ osgb.getGridRef(3)+"</a>");
+					+ osgb.getGridRef(3).replace(" ","") +"</a>");
 			else
 				insertCell(row,"");
 
@@ -290,12 +280,24 @@ FEED.prototype.onUpdate = function(feed)
 			else
 				insertCell(row,message.type,"left");
 		}
-		var lineString	= new OpenLayers.Geometry.LineString(osMapPoints);
-		var lineFeature = new OpenLayers.Feature.Vector(lineString, null, tracker.lineStyle);
-		console.log(tracker.lineStyle);
-		osMap.getVectorLayer().addFeatures([lineFeature]);
+		// Only actually try to draw lines if we have any TRACKER messages
+		if(tracker.message.length)
+		{
+			var lineString	= new OpenLayers.Geometry.LineString(osMapPoints);
+			var lineFeature = new OpenLayers.Feature.Vector
+			(
+				lineString,
+				null,
+				{
+					strokeColor		: "#" + tracker.trackColourRGB(),
+					strokeOpacity	: tracker.trackOpacity,
+					strokeWidth		: tracker.trackWidth
+				}
+			);
+			osMap.getVectorLayer().addFeatures([lineFeature]);
+		}
 	});
-
+	
 	tbody.id = JSON.stringify
 	({
 		feedType	: feed.type,
@@ -329,7 +331,7 @@ FEED.prototype.onUpdate = function(feed)
 					feedType	: feed.type,
 					feedId		: feed.id,
 					trackerId	: tracker.id
-				}), "Track.plt", "text/csv", tracker.getOziPlt(parseInt(tracker.lineStyle.strokeColor))
+				}), "Track.plt", "text/csv", tracker.getOziPlt()
 			);
 		});
 	});
@@ -352,7 +354,5 @@ FEEDS.trackMsgDisplay=function(feedType, feedId, trackerId, trackMsgs)
 
 // Global osMap variable
 osMap = null;
-
-FEEDS.trackerCount = 0;
 
 // vim: ts=2:sw=2

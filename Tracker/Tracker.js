@@ -169,14 +169,28 @@ FEED.prototype.getTracker		= function(id)
 	}
 	return null;
 };
+// Sort & remove duplicates messages
+FEED.prototype.postUpdate = function(feed)
+{
+	feed.tracker.forEach(function(tracker)
+	{
+		tracker.messageSort();
+		for(var ix=1; ix<tracker.message.length; ++ix)
+		{
+			if(tracker.message[ix].id == tracker.message[ix-1].id)
+				tracker.message.splice(--ix,1);
+		}
+	});
+	feed.onUpdate(feed);
+};
 // Deal with top level functionality, such as ensuring startDate & endDate are sensible,
 // then call .getFeedMessages	
 FEED.prototype.getMessages		= function(startDate, endDate, callback)
 {
 	this.endDate = endDate ? new Date(endDate) : null;
 	
-	if(startDate)
-		this.startDate = new Date(startDate);		
+	if(startDate && new Date(startDate).getTime() != this.startDate.getTime())
+		this.startDate = new Date(startDate);
 	else	// startDate not pre-defined
 	{
 		if(this.lastUpdated)
@@ -202,13 +216,13 @@ FEED.prototype.getMessages		= function(startDate, endDate, callback)
 		if(tracker.message.length && startDate)
 		{
 			// Oldest messages will always be at the end
-			while(tracker.message[tracker.message.length-1].time < feed.startDate)
+			while(tracker.message[tracker.message.length-1].time.getTime() < feed.startDate)
 				tracker.message.pop();
 		}
 			
 		if(tracker.message.length && endDate)
 			// Newest messages will always be at the front
-			while(tracker.message[0].time > feed.endDate)
+			while(tracker.message[0].time.getTime() > feed.endDate)
 				tracker.message.shift();
 	});
 
@@ -226,6 +240,8 @@ FEED.prototype.getFeedMessages	= function(startDate, endDate, callback)
 	});
 };
 
+
+
 // Generic TRACKER object
 function TRACKER()
 {
@@ -233,28 +249,52 @@ function TRACKER()
 }
 TRACKER.prototype.id	= 0;
 TRACKER.prototype.name	= "";
+TRACKER.prototype.constructor = TRACKER;
 TRACKER.prototype.type	= "";
 TRACKER.prototype.status= "";
+TRACKER.prototype.trackWidth = 4;
+TRACKER.prototype.trackOpacity	= 0.5;
+TRACKER.prototype.trackColour	= 0;
+TRACKER.prototype.trackColourRGB	= function()
+{
+	var rgb = this.trackColour.toString(16);
+	while(rgb.length < 6)
+		rgb = "0" + rgb;
+	return rgb;
+};
+TRACKER.prototype.trackColourKml = function()
+{
+	// Recalculate opacity as a 1 byte hex number
+	var opacity = Math.round(255*this.trackOpacity).toString(16);
+	if (opacity.length < 2)
+		opacity = "0" + opacity;
+	
+	// Get RGB (hex)
+	var rgb = this.trackColourRGB();
+	
+	// KML color format is aabbggrr - in hex. aa is opacity
+	return	opacity
+		+	rgb.substr(4,2)
+		+	rgb.substr(2,2)
+		+ 	rgb.substr(0,2);
+};
 TRACKER.prototype.messageSort = function ()
 {
 	this.message.sort(function (a,b) { return (b.time - a.time); });
 };
 // Get Ozi PLT file
 // PLT files are single track, hence implemented at TRACKER level
-TRACKER.prototype.getOziPlt = function(trackColour)
+TRACKER.prototype.getOziPlt = function()
 {
 	var plt = "";
 	var points = 0;
-	
-	if(!trackColour)
-		trackColour = "255";
 	
 	// Messages are latest first, so we build file backwards
 	this.message.forEach(function (message)
 	{
 		if(message.hasLocation())
 		{
-			var tDateTime	= 25568+(message.time.UTC/86400);		// TDateTime 25568 is 01/01/1970 0000Z
+			var tDateTime	= 25569+(message.time.getTime()/86400000);		// TDateTime 25569 is 01/01/1970 0000Z
 			var altitude	= -777;		// = not valid
 			if(message.hasAltitude())
 				altitude	= 3.2808*message.altitude;		// in feet
@@ -266,7 +306,7 @@ TRACKER.prototype.getOziPlt = function(trackColour)
 				"0," + altitude.toString()	+ "," +
 				tDateTime.toString()		+ "," +
 				message.time.toLocaleDateString()	+ "," +
-				message.time.toLocaleTimeString() + plt;
+				message.time.toLocaleTimeString() + "\r\n" + plt;
 			++points;
 		}
 	});
@@ -276,7 +316,7 @@ TRACKER.prototype.getOziPlt = function(trackColour)
 		"WGS 84\r\n" +
 		"Altitude is in Feet\r\n" +
 		"Reserved 3\r\n" +
-		"0,1," + trackColour + "," + this.name + ",0,0,2," + trackColour + "\r\n" +
+		"0,1," + this.trackColour + "," + this.name + ",0,0,2," + this.trackColour + "\r\n" +
 		points.toString() + "\r\n" + plt;
 
 	return plt;
@@ -313,6 +353,9 @@ var FEEDS=new Object();
 FEEDS.feed=new Array();
 FEEDS.provider=new Array();
 
+
+
+
 // Alphabetic sort on name
 FEEDS.sortName = function(a,b)
 {
@@ -328,7 +371,9 @@ FEEDS.getFeed = function(type, feedId)
 {
 	for(var ix=0; ix<FEEDS.feed.length; ix++)
 		if(FEEDS.feed[ix].id == feedId && FEEDS.feed[ix].type == type)
+		{
 			return FEEDS.feed[ix];
+		}
 	return null
 }
 
@@ -338,9 +383,9 @@ FEEDS.addFeed = function(type, parameter)
 	FEEDS.provider.forEach(function (provider)
 	{
 		if(type == provider.type)
-		{	
+		{
 			FEEDS.feed.push(new provider.construct(parameter));
-			FEEDS.feed.sort(FEEDS.sortName)
+			FEEDS.feed.sort(FEEDS.sortName);
 			return true;
 		}
 	});
@@ -350,11 +395,11 @@ FEEDS.addFeed = function(type, parameter)
 // get messages for all feeds
 FEEDS.getMessages = function(startDate, endDate)
 {
-	for(var ix=0; ix<FEEDS.feed.length; ix++)
+	FEEDS.feed.forEach(function(feed)
 	{
-		console.log(FEEDS.feed[ix]);
-		FEEDS.feed[ix].getMessages(startDate, endDate, FEEDS.feed[ix].onUpdate);
-	}
+		console.log(feed);
+		feed.getMessages(startDate, endDate, feed.postUpdate);
+	});
 }
 
 // Returns KML file of all feeds/trackers
@@ -366,34 +411,62 @@ FEEDS.getKml = function()
 		var txt = FEEDS.feed[0].lastUpdated.toLocaleString();
 	
 	// File Header string
-	txt =
-		"<?xml version='1.0' encoding='UTF-8'?>\r\n" +
-		"<kml xmlns='http://www.opengis.net/kml/2.2'>\r\n"	+
-		"\t<Document>\r\n" +
-		"\t\t<name>Tracker</name>\r\n"	+
-		"\t\t<description>Tracker data from " + FEEDS.feed[0].startDate.toLocaleString() +
-		"to " + txt + "</description>\r\n";
+	txt	= "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\r\n"
+		+ "<kml xmlns='http://www.opengis.net/kml/2.2' xmlns:atom='http://www.w3.org/2005/Atom' xmlns:gx='http://www.google.com/kml/ext/2.2' xmlns:kml='http://www.opengis.net/kml/2.2'>\r\n"
+		+ "\t<Document>\r\n"
+		+ "\t\t<name>Tracker</name>\r\n"
+		+ "\t\t<description>Tracker data from " + FEEDS.feed[0].startDate.toLocaleString().replace(",","")
+		+ " to " + txt.replace(",","") + "</description>\r\n";
 		
 	FEEDS.feed.forEach(function (feed)
 	{
 		feed.tracker.forEach(function (tracker)
 		{
-			txt +=
-				"\t\t<placemark>\r\n" +
-				"\t\t\t<name>" + tracker.name + "</name>\r\n" +
-				"\t\t\t<linestring>\r\n" +
-				"\t\t\t\t<coordinates>\r\n";	// TODO: Style
+			// Create style name
+			var style = feed.type + "_" + tracker.type;
+			
+			// Determine altitudeMode
+			// Only give a real altitude IF ALL messages with a location have a valid altitude
+			var altitudeMode = "absolute";
+			tracker.message.forEach(function (message)
+			{
+				if(message.hasLocation() && !message.hasAltitude())
+					altitudeMode = "relativeToGround";
+			});
+			
+			txt+= "\t\t<Style id='" + style +"'>\r\n"
+				+ "\t\t\t<LineStyle>\r\n"
+				+ "\t\t\t\t<color>" + tracker.trackColourKml() + "</color>\r\n"
+				+ "\t\t\t\t<width>" + tracker.trackWidth + "</width>\r\n"
+				+ "\t\t\t</LineStyle>\r\n"
+				+ "\t\t\t</Style>\r\n"
+				+ "\t\t<Placemark>\r\n"
+				+ "\t\t\t<name>" + tracker.name + "</name>\r\n"
+				+ "\t\t\t<styleUrl>#" + style + "</styleUrl>\r\n"
+				+ "\t\t\t<LineString>\r\n"
+				+ "\t\t\t\t<tessellate>1</tessellate>\r\n"
+				+ "\t\t\t\t<extrude>1</extrude>\r\n"
+				+ "\t\t\t\t<altitudeMode>" + altitudeMode + "</altitudeMode>\r\n"
+				+ "\t\t\t\t<coordinates>\r\n"
+				;
+				// NB: Assumes all messages either have or don't have altitude
+				
 			tracker.message.forEach( function (message)
 			{
 				if(message.hasLocation())
 					txt	+= "\t\t\t\t\t"
+						+ message.longitude.toString() + ","
 						+ message.latitude.toString()  + ","
-						+ message.longitude.toString() + ",\r\n";  //TODO: Altitude
+						+(	altitudeMode == "absolute"
+							? message.altitude.toString()
+							: "0" )
+						+ "\r\n"
+						;
 			});
-			txt +=
-				"\t\t\t\t</coordinates>\r\n" +
-				"\t\t\t</linestring>\r\n" +
-				"\t\t</placemark>\r\n";
+			txt+= "\t\t\t\t</coordinates>\r\n"
+				+ "\t\t\t</LineString>\r\n"
+				+ "\t\t</Placemark>\r\n"
+				;
 		});
 	});
 	txt +=
@@ -412,13 +485,13 @@ FEEDS.getGpx = function()
 		var txt = FEEDS.feed[0].lastUpdated.toLocaleString();
 
 	// File Header string
-	var txt =
-		"<?xml version='1.0' encoding='UTF-8'?>\r\n" +
-		"<gpx xmlns='http://www.topografix.com/GPX/1/1'>\r\n"	+
-		"\t<metadata>\r\n" +
-		"\t\t<text>Tracker data from " + FEEDS.feed[0].startDate.toLocaleString() +
-		"to " + txt + "</text>\r\n" +
-		"\t</metadata>\r\n" ; // TODO: MetaData. Example has link
+	var txt
+		= "<?xml version='1.0' encoding='UTF-8'?>\r\n"
+		+ "<gpx xmlns='http://www.topografix.com/GPX/1/1'>\r\n"
+		+ "\t<metadata>\r\n"
+		+ "\t\t<text>Tracker data from " + FEEDS.feed[0].startDate.toLocaleString().replace(",","")
+		+ " to " + txt + "</text>\r\n"
+		+ "\t</metadata>\r\n" ; // TODO: MetaData. Example has link
 		
 	FEEDS.feed.forEach(function (feed)
 	{
@@ -432,13 +505,13 @@ FEEDS.getGpx = function()
 			{
 				if(message.hasLocation())
 				{
-					txt	+= "\t\t\t<trkpt" 
-						+ " latitude='"			+ message.latitude.toString()	+ "' "
-						+ " longitude='"		+ message.longitude.toString()	+ "'";
+					txt	+="\t\t\t<trkpt" 
+						+ " lat='" + message.latitude.toString()	+ "'"
+						+ " lon='" + message.longitude.toString()	+ "'>\r\n";
 					if(message.hasAltitude())
-						txt += " altitude='"	+ message.altitude.toString()	+ "'";
-					txt += ">/r/n"
-						+  "\t\t\t</trkpt>\r\n";
+						txt += "\t\t\t\t<ele>"	+ message.altitude.toString()	+ "</ele>\r\n";
+					txt +="\t\t\t\t<time>" + message.time.toJSON() + "</time>\r\n"
+						+ "\t\t\t</trkpt>\r\n";
 				}
 			});
 			txt +=
@@ -483,5 +556,25 @@ FEEDS.addFromURI = function()
 {
 	FEEDS.getURIParameters().forEach(function (feed) { FEEDS.addFeed(feed.key, feed.value); } );
 }
+
+// Set tracker colours
+FEEDS.trackerColour =
+[
+	0x0000CC,
+	0x00CC00,
+	0x00CCCC,
+	0xCC0000,
+	0xCC00CC,
+	0xCCCC00,
+	0xCCCCCC,
+	0x000066,
+	0x006600,
+	0x006666,
+	0x660000,
+	0x660066,
+	0x666600,
+	0x666666
+];
+
 
 // vim: ts=2:sw=2

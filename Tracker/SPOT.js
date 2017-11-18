@@ -84,14 +84,6 @@ function SPOT_FEED(id)
 					fed.latestMessage = msgTime;
 			}
 		
-			// Now sort the arrays
-			fed.tracker.sort(FEEDS.sortName);
-			for(var ix=0; ix<fed.tracker.length; ix++)
-				fed.tracker[ix].message.sort(function (a,b)
-				{
-					return (b.time - a.time);
-				});
-
 			// And finally do another callback
 			if(callback)
 				callback(fed);

@@ -135,11 +135,6 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 			}
 		});
 	
-	// Sort the messages
-	this.messageSort();
-	
-	console.log(this);
-	
 	// Final Callback
 	if(this.updateCallback)
 		this.updateCallback(feed);
@@ -186,9 +181,18 @@ LKGPS_TRACKER.prototype.getMessages		= function(startDate, endDate, callback)
 // LK-GPS_FEED object - inherits from FEED object
 function LKGPS_FEED(id)
 {
-	this.id		= id;
 	if(id)
-		this.tracker.push(new LKGPS_TRACKER(this.host, id, 102));	
+	{
+		this.id		= id;
+		this.tracker.push(new LKGPS_TRACKER(this.host, this.id));
+		
+		// For some reason we get all the LKGPS_TRACKERs on all the LKGPS_FEEDs
+		// so filter on tracker ID
+		this.tracker = this.tracker.filter(function(tracker)
+		{
+			return (tracker.id == id);
+		});
+	}
 }
 LKGPS_FEED.prototype = new FEED();
 LKGPS_FEED.prototype.constructor = LKGPS_FEED;
@@ -198,16 +202,15 @@ LKGPS_FEED.prototype.host		= "http://www.lkgps.net:8080";
 
 // ZG666GPS is a derivative of LKGPS: Same API, etc
 function ZG666_FEED() {}
-ZG666_FEED.prototype				= new LKGPS_FEED;
+ZG666_FEED.prototype				= new LKGPS_FEED();
 ZG666_FEED.prototype.constructor	= LKGPS_FEED;
 ZG666_FEED.prototype.host			= "http://211.162.69.241:8088/openapiv3.asmx";
 ZG666_FEED.prototype.type			= "ZG666";
 
 // ZG888GPS is a derivative of LKGPS: Same API, etc
 function ZG888_FEED() {}
-ZG888_FEED.prototype				= new LKGPS_FEED;
+ZG888_FEED.prototype				= new LKGPS_FEED();
 ZG888_FEED.prototype.constructor	= LKGPS_FEED;
-ZG888_FEED.prototype				= new LKGPS_FEED;
 ZG888_FEED.prototype.host			= "http://app.zg002gps.com/OpenAPIV3.asmx";
 ZG888_FEED.prototype.type			= "ZG888";
 
