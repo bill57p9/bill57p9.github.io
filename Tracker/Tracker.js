@@ -322,6 +322,22 @@ TRACKER.prototype.getOziPlt = function()
 	return plt;
 };
 
+// Get length of track within a TRACKER object
+TRACKER.prototype.getTrackLength = function()
+{
+  var length = 0, previousMessage = null;
+  this.message.forEach(function (message)
+  {
+    if(message.hasLocation())
+    {
+      // skip for first valid message
+      if(!isNull(previousMessage))
+        length += message.getDistance(previousMessage);
+      previousMessage = message;
+    }
+  })
+};
+
 // TRACKER_MESSAGE represents a single TRACKER message
 // It inherits from GT_WGS84 to give geo (& OSGB) functionality
 function TRACKER_MESSAGE() {}

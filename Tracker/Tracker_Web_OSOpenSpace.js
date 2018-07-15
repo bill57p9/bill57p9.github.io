@@ -178,7 +178,7 @@ FEED.prototype.onUpdate = function(feed)
 			+ "</a></th>"
 			+ "<td colspan='2' alight='right' bgcolor='#"
 			+ tracker.trackColourRGB() + "'>"
-			+ (tracker.status ? tracker.status : "")
+			+ tracker.getTrackLength()
 			+ "</td>";
 
 		// First we count the number of TRACK messages if hiding them
@@ -224,7 +224,7 @@ FEED.prototype.onUpdate = function(feed)
 
 			insertCell(row,DAYS[message.time.getDay()]);
 			insertCell(row,message.time.toLocaleTimeString());
-			insertCell(row,message.battery ? "<img src='battery_"+message.battery+".png'>" : "");
+			insertCell(row,message.battery ? "<img src='battery_"+message.battery+".png' alt='"+message.battery+"'/>" : "");
 			if(message.latitude && message.longitude)
 				insertCell(row,"<a href='javascript:osMap.setCenter(new OpenSpace.MapPoint("
 					+ osgb.eastings + "," + osgb.northings + "))'>"

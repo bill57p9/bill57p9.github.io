@@ -108,7 +108,19 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 	}
 	if(status)
 	{
-		tracker.status = status.status;
+		// Split status message and check credibility
+		// Expected: n-Batteryx%
+		// where n in 1, 2 or 3 for MOVE, STOP, OFFLINE
+		var aStatus = status.status.split("-");
+		if (2 == aStatus.length())
+		{
+			var iStatus = { "Moving", "Stopped", "Offline" }
+			if (0 < aStatus[0] && 4 > aStatus[0])
+				tracker.status = iStatus[aStatus[0]];
+			if (0 == aStatus[1].lastIndexOf("Battery"))
+				message.battery = iStatus[1].substr(7);
+		}
+		console.log(status);
 	}
 	if(alarms.arr)
 		alarms.arr.forEach(function (alarm)
