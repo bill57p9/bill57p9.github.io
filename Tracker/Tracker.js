@@ -325,17 +325,18 @@ TRACKER.prototype.getOziPlt = function()
 // Get length of track within a TRACKER object
 TRACKER.prototype.getTrackLength = function()
 {
-  var length = 0, previousMessage = null;
+  var length = 0, previousMessage = false;
   this.message.forEach(function (message)
   {
     if(message.hasLocation())
     {
       // skip for first valid message
-      if(!isNull(previousMessage))
+      if(previousMessage)
         length += message.getDistance(previousMessage);
       previousMessage = message;
     }
   })
+  return length;
 };
 
 // TRACKER_MESSAGE represents a single TRACKER message

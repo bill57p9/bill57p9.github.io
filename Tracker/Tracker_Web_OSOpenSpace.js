@@ -166,7 +166,7 @@ FEED.prototype.onUpdate = function(feed)
 			tracker.trackMsgs="hide";	// Default: Hide non-latest
 
 		tbody.insertRow(-1).innerHTML
-			= "<th colspan='5' align='left'>"
+			= "<th colspan='4' align='left'>"
 			+ "<a id='" + JSON.stringify
 			({
 				feedType	: feed.type,
@@ -176,9 +176,12 @@ FEED.prototype.onUpdate = function(feed)
 			+ "'>"
 			+ tracker.name
 			+ "</a></th>"
+			+ "<td>"
+			+ tracker.getTrackLength().toFixed(2)
+			+ " km</td>"
 			+ "<td colspan='2' alight='right' bgcolor='#"
 			+ tracker.trackColourRGB() + "'>"
-			+ tracker.getTrackLength()
+			+ (tracker.status ? tracker.status : "")
 			+ "</td>";
 
 		// First we count the number of TRACK messages if hiding them

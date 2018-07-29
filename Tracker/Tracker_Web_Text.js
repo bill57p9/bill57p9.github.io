@@ -32,12 +32,15 @@ FEED.prototype.onUpdate = function(feed)
 			tracker.trackMsgs="hide"	// Default: Hide non-latest
 
 		tbody.insertRow(-1).innerHTML=
-			"<th colspan='5' align='left'>"
+			"<th colspan='4' align='left'>"
 			+tracker.name+
 			"</th>"+
+			"<td>"
+			+ tracker.getTrackLength().toFixed(2)
+			+" km</td>"
 			"<td colspan='2' alight='right'>"
 			+ (tracker.status ? tracker.status : "")
-			+"</td>";
+			+ "</td>";
 
 		// First we count the number of TRACK messages if hiding them
 		var trackMsgCount=-1;

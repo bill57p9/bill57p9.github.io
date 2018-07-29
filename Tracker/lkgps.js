@@ -114,7 +114,7 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 		var aStatus = status.status.split("-");
 		if (2 == aStatus.length())
 		{
-			var iStatus = { "Moving", "Stopped", "Offline" }
+			var iStatus = ["Moving", "Stopped", "Offline"]
 			if (0 < aStatus[0] && 4 > aStatus[0])
 				tracker.status = iStatus[aStatus[0]];
 			if (0 == aStatus[1].lastIndexOf("Battery"))
