@@ -227,7 +227,7 @@ FEED.prototype.onUpdate = function(feed)
 
 			insertCell(row,DAYS[message.time.getDay()]);
 			insertCell(row,message.time.toLocaleTimeString());
-			insertCell(row,message.battery ? "<img src='battery_"+message.battery.replace("%","pc")+".png' alt='"+message.battery+"'/>" : "");
+			insertCell(row,message.battery ? "<img src='battery_"+message.battery.replace("%","pc")+".png' width='16' height='16' alt='"+message.battery+"'/>" : "");
 			if(message.latitude && message.longitude)
 				insertCell(row,"<a href='javascript:osMap.setCenter(new OpenSpace.MapPoint("
 					+ osgb.eastings + "," + osgb.northings + "))'>"
