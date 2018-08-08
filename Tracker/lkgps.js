@@ -119,10 +119,16 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 			var iStatus = ["Moving", "Stopped", "Offline"]
 			if (0 < aStatus[0] && 4 > aStatus[0])
 				tracker.status = iStatus[aStatus[0]];
-		////	if (0 == aStatus[1].lastIndexOf("Battery"))
-		//		message.battery = iStatus[1].substr(7);
+			if (0 == aStatus[1].lastIndexOf("Battery"))
+			{
+				var message			= new TRACKER_MESSAGE();
+				message.time		= new Date(status.positionTime());
+			//	message.id;
+				message.latitude	= status.lat;
+				message.longitude	= status.lng;
+				message.battery		= iStatus[1].substr(7);
+			}
 		}
-		console.log(status);
 	}
 	if(alarms.arr)
 		alarms.arr.forEach(function (alarm)
