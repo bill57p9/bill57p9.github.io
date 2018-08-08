@@ -122,8 +122,8 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 			if (0 == aStatus[1].lastIndexOf("Battery"))
 			{
 				var message			= new TRACKER_MESSAGE();
-				message.time		= new Date(status.positionTime);
 			//	message.id;
+				message.time		= new Date(status.positionTime);
 				message.latitude	= status.lat;
 				message.longitude	= status.lng;
 				message.battery		= iStatus[1].substr(7);
