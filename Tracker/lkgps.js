@@ -125,10 +125,17 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 				// Add battery level to message with matching time
 				// Probably will not work for offline status ...
 				var statusTime = new Date(status.positionTime);
-				tracker.message.forEach(function(message))
+				tracker.message.forEach(function(message)
 				{
-					if(statusTime == message.time)
-						message.battery = aStatus[1].substr(7);
+					var message			= new TRACKER_MESSAGE();
+					message.time		= new Date(status.positionTime);
+				//	message.id;
+					message.latitude	= status.lat;
+					message.longitude	= status.lng;
+					message.battery 	= aStatus[1].substr(7);
+					tracker.message.push(message);
+					if(message.time > feed.latestMessage)
+						feed.latestMessage = new Date(message.time);
 				}
 			}
 		}
