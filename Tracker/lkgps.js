@@ -119,7 +119,8 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 			var iStatus = ["Moving", "Stopped", "Offline"]
 			if (0 < aStatus[0] && 4 > aStatus[0])
 				tracker.status = iStatus[aStatus[0]-1];
-			if (0 == aStatus[1].lastIndexOf("Battery"))
+			console.log(tracker);
+			if (0 == aStatus[1].lastIndexOf("Battery") && feed.latestMessage)
 			{
 				console.log(feed.latestMessage.getTime());
 				// Add battery level to latest message
