@@ -9,6 +9,7 @@ FEEDS.refresh=function()
 	var startDate	= document.getElementById("startDate").value;
 	
 	// If startDate has NOT changed since last refresh, send NULL to get latest/default messages
+	console.log(FEEDS);
 	if(startDate == FEEDS.feed[0].startDate)
 		startDate = null;
 	FEEDS.getMessages(startDate, document.getElementById("endDate").value);

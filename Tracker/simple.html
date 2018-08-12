@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html>
+	<head>
+		<title>Tracker</title>
+	</head>
 	<body>
 		<script language="javascript" src="geotools.min.js"> </script>
 		<script language="javascript" src="J50Npi.min.js"> </script>
 		<script language="javascript" src="Tracker.js"> </script>
 		<script language="javascript" src="SPOT.js"> </script>
 		<script language="javascript" src="lkgps.js"> </script>
+		<script language="javascript" src="local.js"> </script>
 		<script language="javascript" src="Tracker_Web_Text.js"> </script>
 		<script language="javascript" src="Tracker_Web.js"> </script>
 		<h1 id="title"></h1>
@@ -22,16 +26,19 @@
 		<hr/>
 		<table id="updateTimes">
 			<tr>
-				<td>Last Updated</td>
-				<td id="updateTimestamp"></td>
+				<td>Start Time</td>
+				<td colspan='3'><input id="startDate" type="datetime-local"/></td>
+				<td align='right'><a id='getKML'>KML</a></td>
 			</tr>
 			<tr>
-				<td rowspan='3'>Update</td>
-				<td><a href='javascript:FEEDS.refresh()'>Now</a></td>
+				<td>End Time</td>
+				<td colspan='3'><input id="endDate" type="datetime-local"/></td>
+				<td align='right'><a id='getGPX'>GPX</a></td>
 			</tr>
 			<tr>
+				<td><a href='javascript:FEEDS.refresh()'>Update</a></td>
 				<td>
-					<select id="updateInterval" onchange="SPOT_FEEDS.updateTimer()">
+					<select id="updateInterval" onchange="FEEDS.updateTimer()">
 						<option value="0">Manual only</option>
 						<!--option value="1">Every minute</option-->
 						<option value=  "3">After 3 minutes</option>
@@ -48,13 +55,9 @@
 						<option value="1440">After 1 day</option>
 					</select>
 				</td>
-			</tr>
-			<tr>
-				<td>
-					<a href='javascript:FEEDS.getHistory()'>Get Earlier Data</a>
-					<input id="startDate" type="hidden"/>
-					<input id="endDate" type="hidden"/>
-				</td>
+				<td/>
+				<td>Last</td>
+				<td id="updateTimestamp"></td>
 			</tr>
 		</table>
 	</body>

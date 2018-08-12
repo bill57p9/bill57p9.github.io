@@ -64,7 +64,7 @@ FEED.prototype.onUpdate = function(feed)
 
 			insertCell(row,DAYS[message.time.getDay()]);
 			insertCell(row,message.time.toLocaleTimeString());
-			insertCell(row,message.battery ? "<img src='battery_"+message.battery+".png'>" : "");
+			insertCell(row,message.battery ? "<img src='battery_"+message.battery.replace("%","pc")+".png' width='16' height='16' alt='"+message.battery+"'/>" : "");
 			if(message.latitude && message.longitude)
 				insertCell(row,"<a href='http://www.streetmap.co.uk/newprint.srf?x="+
 					osgb.eastings+"&y="+osgb.northings+"&z=4&ar=Y'>"+
