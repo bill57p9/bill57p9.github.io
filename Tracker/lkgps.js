@@ -120,14 +120,14 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 			if (0 < aStatus[0] && 4 > aStatus[0])
 				tracker.status = iStatus[aStatus[0]-1];
 			console.log(tracker);
-			if (0 == aStatus[1].lastIndexOf("Battery") && feed.latestMessage)
+			if (0 == aStatus[1].lastIndexOf("Battery"))
 			{
-				console.log(feed.latestMessage.getTime());
+				console.log(tracker.latestMessage.getTime());
 				// Add battery level to latest message
 				tracker.message.forEach(function(message)
 				{
 					console.log(message.time.getTime());
-					if(message.time.getTime() == feed.latestMessage.getTime())
+					if(message.time.getTime() == tracker.latestMessage.getTime())
 						message.battery	= aStatus[1].substr(7);
 				});
 			}
