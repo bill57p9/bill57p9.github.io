@@ -124,6 +124,7 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 				// Add battery level to latest message
 				tracker.message.forEach(function(message)
 				{
+					console.log(message.time +" "+ feed.latestMessage);
 					if(message.time == feed.latestMessage)
 						message.battery	= aStatus[1].substr(7);
 				});
