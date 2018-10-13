@@ -414,6 +414,14 @@ FEEDS.getMessages = function(startDate, endDate)
 {
 	FEEDS.feed.forEach(function(feed)
 	{
+		// Check that we have colours
+		// This is an attempt to ensure they are allocated consistently
+		feed.tracker.forEach(function (tracker)
+		{
+			if(!tracker.trackColour)
+				tracker.trackColour = FEEDS.trackerColour.shift();
+		});
+
 		console.log(feed);
 		feed.getMessages(startDate, endDate, feed.postUpdate);
 	});
