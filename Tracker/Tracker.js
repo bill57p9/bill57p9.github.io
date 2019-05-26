@@ -189,7 +189,7 @@ FEED.prototype.getMessages		= function(startDate, endDate, callback)
 {
 	this.endDate = endDate ? new Date(endDate) : null;
 	
-	if(startDate && new Date(startDate).getTime() != this.startDate.getTime())
+	if(startDate && (this.startDate ? new Date(startDate).getTime() != this.startDate.getTime() : true))
 		this.startDate = new Date(startDate);
 	else	// startDate not pre-defined
 	{
