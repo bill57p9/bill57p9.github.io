@@ -100,13 +100,31 @@ GT_WGS84.prototype.getCentre = function(coords)
 
 GT_WGS84.prototype.isValid = function()
 {
-	return
-		this.latitude	< -90 ||
-		this.latitude	>  90 ||
-		this.longitude	<   0 ||
-		this.longitude	> 180
-		? false : true
+    var notValid = 
+        (
+            this.latitude < -90 ||
+            this.latitude > 90 ||
+            this.longitude < -180 ||
+            this.longitude > 180
+        );
+    return !notValid;
 };
+
+// Add toCoords to prototype
+GT_WGS84.prototype.toCoords = function(separator)
+{
+    if (!this.isValid())
+        return "invalid";
+
+    var coords =
+        Math.abs(this.latitude) +
+        (this.latitude < 0 ? "S" : "N") +
+        separator +
+        Math.abs(this.longitude) +
+        (this.longitude < 0 ? "W" : "E");
+
+    return coords;
+}
 
 // Get JSON LOCAL format timestamp
 Date.prototype.getJSONlocal = function()
@@ -356,10 +374,8 @@ TRACKER_MESSAGE.prototype.isTrack	= function()
 		return true;
 	return false;
 };
-TRACKER_MESSAGE.prototype.hasLocation = function()
-{
-	return this.isValid;
-};
+TRACKER_MESSAGE.prototype.hasLocation = TRACKER_MESSAGE.prototype.isValid;
+
 TRACKER_MESSAGE.prototype.hasAltitude = function()
 {
 	return (null != this.altitude);

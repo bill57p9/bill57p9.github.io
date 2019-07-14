@@ -65,10 +65,24 @@ FEED.prototype.onUpdate = function(feed)
 			insertCell(row,DAYS[message.time.getDay()]);
 			insertCell(row,message.time.toLocaleTimeString());
 			insertCell(row,message.battery ? "<img src='battery_"+message.battery.replace("%","pc")+".png' width='16' height='16' alt='"+message.battery+"'/>" : "");
-			if(message.latitude && message.longitude)
-				insertCell(row,"<a href='http://www.streetmap.co.uk/newprint.srf?x="+
-					osgb.eastings+"&y="+osgb.northings+"&z=4&ar=Y'>"+
-					osgb.getGridRef(3)+"</a>");
+			if (message.isValid())
+			{
+				if (message.isGreatBritain())
+				{
+                    var osgb = message.getOSGB();
+                    insertCell(row, "<a href='http://www.streetmap.co.uk/newprint.srf?x=" +
+                        osgb.eastings + "&y=" + osgb.northings + "&z=4&ar=Y'>" +
+                        osgb.getGridRef(3) + "</a>");
+				}
+				else
+                    insertCell
+                    (
+                        row,
+                        "<a href='https://www.google.com/maps/search/?api=1&query=" +
+                            message.latitude + "," + message.longitude +"'>"+
+                        message.toCoords(" ") + "</a>"
+					);
+			}
 			else
 				insertCell(row,"");
 
