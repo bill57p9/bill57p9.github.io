@@ -43,7 +43,8 @@ LKGPS_API.prototype.parse = function()
 function LKGPS_MESSAGE(message)
 {
 	this.id		= message.id ? message.id : 0;
-	this.time	= message.pt ? new Date(message.pt + "+0000") : new Date(message.positionTime + "+0000");
+	// For SAFARI date must have T between date & time and must have trailing Z instead of +0000
+	this.time	= new Date(new String(message.pt ? message.pt : message.positionTime).replace(" ","T").concat("Z"));
 	this.latitude=message.lat;
 	this.longitude=message.lng;
 }
