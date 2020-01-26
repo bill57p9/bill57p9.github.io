@@ -1,13 +1,17 @@
 
 
+// Day of week -> Name conversion
+var DAYS=new Array("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
 
+// List of BATTERY_ICONS
+const BATTERY_ICONS = [ "5%", "10%", "20%", "40%","60%","80%","100%","GOOD","LOW" ]
 
 
 // Call to refresh / update feed messages
 FEEDS.refresh=function()
 {
 	var startDate	= document.getElementById("startDate").value;
-	
+
 	// If startDate has NOT changed since last refresh, send NULL to get latest/default messages
 	console.log(FEEDS);
 	if(startDate == FEEDS.feed[0].startDate)
@@ -74,14 +78,26 @@ FEEDS.setDownloadLink = function(linkId, filename, format, content)
 	}
 };
 
+FEEDS.batteryHtml = function(battery)
+{
+	// HTML for battery is (in order of preference)
+	// 1. icon
+	// 2. text
+	// 3. blank
+	if(!battery)
+		return '';
+	if(BATTERY_ICONS.find(function(status) { return status == battery } ))
+		return "<img src='battery_"+battery.replace("%","pc")+".png' width='16' height='16' alt='"+battery+"'/>";
+	return battery;
+}
+
+
 ////////////////////
 //                //
 // INITIALISATION //
 //                //
 ////////////////////
 
-// Day of week -> Name conversion
-var DAYS=new Array("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
 
 // Get the data once document is fully loaded
 window.onload = function()
@@ -94,7 +110,7 @@ window.onload = function()
 	document.getElementById("endDate").value	= FEEDS.getURIParameter("endDate");
 
 	FEEDS.refresh();
-	
+
 
 
 	// Read back (default) startDate

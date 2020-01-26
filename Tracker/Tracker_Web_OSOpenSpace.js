@@ -12,7 +12,7 @@ GT_OSGB.prototype.getOpenSpaceMapPoint = function()
 
 
 // Show/hide a marker for a particular message location
-TRACKER_MESSAGE.prototype.openSpaceMarker = 
+TRACKER_MESSAGE.prototype.openSpaceMarker =
 {
 	obj				: null,
 	icon			: 'https://openspace.ordnancesurvey.co.uk/osmapapi/img_versions/img_1.0.1/OS/images/markers/round-marker-lrg-red.png',
@@ -40,9 +40,9 @@ TRACKER_MESSAGE.prototype.openSpaceHide = function()
 	if(this.openSpaceMarker.obj)
 	{
 		osMap.removeMarker(this.openSpaceMarker.obj);
-		this.openSpaceMarker.obj = null;	
+		this.openSpaceMarker.obj = null;
 	}
-	
+
 }
 TRACKER_MESSAGE.prototype.openSpaceToggle = function()
 {
@@ -55,7 +55,7 @@ FEEDS.resize = function()
 	var map = document.getElementById("map");
 	var tbl = document.getElementById("divMessages");
 	var upd = document.getElementById("divUpdate");
-	
+
 	if(window.innerWidth > window.innerHeight && window.innerWidth > 900)
 	{
 		// Landscape, map on left
@@ -78,12 +78,12 @@ FEEDS.resize = function()
 			(window.innerWidth < window.innerHeight)	? window.innerWidth  -  20
 														: window.innerHeight - 200
 		)+"px";
-		tbl.style.marginLeft= null;	
+		tbl.style.marginLeft= null;
 		tbl.style.height	= 'auto';
 		upd.style.bottom	= null;
 		upd.style.position	= 'static';
 	}
-	
+
 	if(osMap)
 		osMap.updateSize();
 }
@@ -94,16 +94,16 @@ FEEDS.resize = function()
 FEED.prototype.onUpdate = function(feed)
 {
 	console.log(FEEDS);
-	
+
 	// initialise the map if required
 	if(!osMap)
 	{
 		FEEDS.resize();
 		osMap = new OpenSpace.Map('map', {resolutions: [2500, 1000, 500, 200, 100, 50, 25, 10, 5, 4, 2.5, 2, 1]});
-		
+
 		//configure map options (basicmap.js)
 		setglobaloptions();
-		// add a box displaying co-ordinates (mouse over map to display) 
+		// add a box displaying co-ordinates (mouse over map to display)
 		//makegrid();
 	}
 
@@ -129,12 +129,12 @@ FEED.prototype.onUpdate = function(feed)
 			if(trackerDistance > trackerRange)
 				trackerRange = trackerDistance;
 		});
-		
+
 		//set the center of the map and the zoom level
 		osMap.setCenter(trackerCentre.getOSGB().getOpenSpaceMapPoint(), osMap.zoom ? osMap.zoom : 8);
 	}
 
-	
+
 	var insertCell=function(tblRow, html, align)
 	{
 		if(!align)
@@ -160,7 +160,7 @@ FEED.prototype.onUpdate = function(feed)
 			tracker.trackColour = FEEDS.trackerColour.shift();
 
 		var osMapPoints = new Array();
-		
+
 		// Define additional variable to store whether to display all tracks
 		if(!tracker.trackMsgs)
 			tracker.trackMsgs="hide";	// Default: Hide non-latest
@@ -202,7 +202,7 @@ FEED.prototype.onUpdate = function(feed)
 			var osgb=message.getOSGB();
 
 			osMapPoints.push(osgb.getOpenLayersGeometryPoint());
-			
+
 			var row=tbody.insertRow(-1);
 			row.title=message.type;
 			row.id = JSON.stringify
@@ -227,7 +227,7 @@ FEED.prototype.onUpdate = function(feed)
 
 			insertCell(row,DAYS[message.time.getDay()]);
 			insertCell(row,message.time.toLocaleTimeString());
-			insertCell(row,message.battery ? "<img src='battery_"+message.battery.replace("%","pc")+".png' width='16' height='16' alt='"+message.battery+"'/>" : "");
+			insertCell(row,FEEDS.batteryHtml());
 			if(message.latitude && message.longitude)
 				insertCell(row,"<a href='javascript:osMap.setCenter(new OpenSpace.MapPoint("
 					+ osgb.eastings + "," + osgb.northings + "))'>"
@@ -243,8 +243,8 @@ FEED.prototype.onUpdate = function(feed)
 
 				// Speed
 				// km/s =           dist(km) /  time(s)
-				// km/h = 3600    * dist(km) / (time(ms) / 1000) 
-				// km/h = 3600000 * dist(km) / time(ms) 
+				// km/h = 3600    * dist(km) / (time(ms) / 1000)
+				// km/h = 3600000 * dist(km) / time(ms)
 				insertCell(row,(
 					3600000*message.getDistance(previousMessage) /
 					(message.time.getTime()-previousMessage.time.getTime())
@@ -300,17 +300,17 @@ FEED.prototype.onUpdate = function(feed)
 			osMap.getVectorLayer().addFeatures([lineFeature]);
 		}
 	});
-	
+
 	tbody.id = JSON.stringify
 	({
 		feedType	: feed.type,
 		feedId		: feed.id
 	});
-	
+
 	// Now paste the tbody over the existing TBODY
 	var table		= document.getElementById("tblMessages");
 	var tableBody	= document.getElementById(tbody.id);
-	
+
 	if(tableBody)
 		table.replaceChild(tbody, tableBody);
 	else

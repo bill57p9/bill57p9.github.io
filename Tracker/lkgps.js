@@ -1,6 +1,6 @@
 // lkgps.js
 // Supports LKGPS type feeds by DeviceID (1 tracker per feed)
-// This includes 
+// This includes
 
 // LKGPS_API - Used for handling the AJAX requests
 function LKGPS_API(baseURL)
@@ -17,7 +17,7 @@ LKGPS_API.prototype.get = function(params, callbackFn, callbackObj)
 			if (this.readyState == 4 && this.status == 200)
 			{
 				var parser = new DOMParser();
-				callbackFn(JSON.parse(parser.parseFromString(this.responseText, "text/xml").childNodes[0].textContent), callbackObj);				
+				callbackFn(JSON.parse(parser.parseFromString(this.responseText, "text/xml").childNodes[0].textContent), callbackObj);
 			}
 		};
 
@@ -37,7 +37,7 @@ LKGPS_API.prototype.parse = function()
 		return JSON.parse(new DOMParser().parseFromString(this.ajax.responseText, "text/xml").childNodes[0].textContent);
 	return null;
 }
-	
+
 // LKGPS_MESSAGE represents a single LKGPS message
 // It inherits from GT_WGS84 to give geo (& OSGB) functionality
 function LKGPS_MESSAGE(message)
@@ -87,7 +87,7 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 	||	4 != this.ApiTrack.ajax.readyState
 	||	4 != this.ApiAlarms.ajax.readyState )
 		return false;
-	
+
 	var feed	= FEEDS.getFeed('LKGPS', this.id);
 	var status	= this.ApiStatus.parse();
 	var	track	= this.ApiTrack.parse();
@@ -106,7 +106,7 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 			if(message.time > feed.latestMessage)
 				feed.latestMessage = new Date(message.time);
 		});
-		tracker.latestMessage = new Date(track.lastDeviceUtcDate + "+0000");		
+		tracker.latestMessage = new Date(track.lastDeviceUtcDate + "+0000");
 	}
 	if(status)
 	{
@@ -138,7 +138,7 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 			message.time = new Date(alarm.deviceDate +"+0000");
 			message.type = alarm.warn;
 			message.id	 = alarm.id;
-				
+
 			// Check to see whether we already have this message
 			if(!tracker.message.find(function (msg)
 			{
@@ -148,14 +148,14 @@ LKGPS_TRACKER.prototype.ApiCallback	= function()
 				// Strip out trailing " Alarm"
 				if(message.type.search(" Alarm"))
 					message.type = message.type.substr(0,message.type.search(" Alarm"));
-				
+
 				// Only add it to messages if within the time scope of the track
 				if(	message.time >= feed.earliestMessage &&
 					message.time <= feed.latestMessage )
 					tracker.message.push(message);
 			}
 		});
-	
+
 	// Final Callback
 	if(this.updateCallback)
 		this.updateCallback(feed);
@@ -187,7 +187,7 @@ LKGPS_TRACKER.prototype.getMessages		= function(startDate, endDate, callback)
 {
 	// Record callback
 	this.updateCallback = callback;
-	
+
 	// Launch API calls
 	this.getTrack(startDate, endDate, function(json, tracker)
 	{	tracker.ApiCallback();	}, this);
@@ -206,7 +206,7 @@ function LKGPS_FEED(id)
 	{
 		this.id		= id;
 		this.tracker.push(new LKGPS_TRACKER(this.host, this.id));
-		
+
 		// For some reason we get all the LKGPS_TRACKERs on all the LKGPS_FEEDs
 		// so filter on tracker ID
 		this.tracker = this.tracker.filter(function(tracker)
