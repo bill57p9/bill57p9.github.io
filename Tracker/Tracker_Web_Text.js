@@ -19,14 +19,17 @@ FEED.prototype.onUpdate = function(feed)
 	var tbody=document.createElement("tbody");
 
 	tbody.innerHTML=
-		"<tr><th colspan='5' align='left'>"
+		"<tr><th colspan='4' align='left'>"
 		+feed.name+
-		"</th></tr>";
+		"</th><td>"
+		+(feed.status ? feed.status : '')+
+		"</td></tr>";
+	console.log(tbody.innerHTML);
 
 	for(var trackerIx=0; trackerIx<feed.tracker.length; trackerIx++)
 	{
 		var tracker=feed.tracker[trackerIx];
-		
+
 		// Define additional variable to store whether to display all tracks
 		if(!tracker.trackMsgs)
 			tracker.trackMsgs="hide"	// Default: Hide non-latest
@@ -62,9 +65,11 @@ FEED.prototype.onUpdate = function(feed)
 			var row=tbody.insertRow(-1);
 			row.title=message.type;
 
+
 			insertCell(row,DAYS[message.time.getDay()]);
 			insertCell(row,message.time.toLocaleTimeString());
-			insertCell(row,message.battery ? "<img src='battery_"+message.battery.replace("%","pc")+".png' width='16' height='16' alt='"+message.battery+"'/>" : "");
+			insertCell(row,FEEDS.batteryHtml(message.battery));
+
 			if (message.isValid())
 			{
 				if (message.isGreatBritain())
@@ -94,8 +99,8 @@ FEED.prototype.onUpdate = function(feed)
 
 				// Speed
 				// km/s =           dist(km) /  time(s)
-				// km/h = 3600    * dist(km) / (time(ms) / 1000) 
-				// km/h = 3600000 * dist(km) / time(ms) 
+				// km/h = 3600    * dist(km) / (time(ms) / 1000)
+				// km/h = 3600000 * dist(km) / time(ms)
 				insertCell(row,(
 					3600000*message.getDistance(previousMessage) /
 					(message.time.getTime()-previousMessage.time.getTime())

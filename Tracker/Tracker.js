@@ -31,7 +31,7 @@ GT_WGS84.prototype.getDistance=function(that)
 
 	var a =
 		Math.cos( here.latitude) *
-		Math.cos(there.latitude) * 
+		Math.cos(there.latitude) *
 		Math.pow(Math.sin((there.longitude-here.longitude)/2),2) +
 		Math.pow(Math.sin((there.latitude -here.latitude )/2),2) ;
 
@@ -66,7 +66,7 @@ GT_WGS84.prototype.getHeading=function(that)
 GT_WGS84.prototype.getCentre = function(coords)
 {
 	var x			= new GT_WGS84;
-	var valid		= 
+	var valid		=
 	{
 		"latlng"	: 0,
 		"altitude"	: 0
@@ -94,13 +94,13 @@ GT_WGS84.prototype.getCentre = function(coords)
 	x.longitude		/= valid.latlng;
 	if(valid.altitude)
 		x.altitude	/= valid.altitude;
-	
+
 	return x;
 }
 
 GT_WGS84.prototype.isValid = function()
 {
-    var notValid = 
+    var notValid =
         (
             this.latitude < -90 ||
             this.latitude > 90 ||
@@ -137,22 +137,22 @@ Date.prototype.getJSONlocal = function()
 			outStr			= "0" + outStr;
 		return outStr;
 	};
-	
+
 	// Convert minutes to +/-hhmm format
 	var min2hhmm	= function(minutes)
 	{
 		var hours	= Math.floor(minutes/60);
-		
+
 		return	(minutes < 0 ? "-" : "+") +
 				pad(Math.abs(hours)					,2) +
 				pad(Math.abs(minutes - (hours*60))	,2);
 	}
-	
+
 	// Get TZ offset as hours (float), always >0
 	var tz		= Math.abs(this.getTimezoneOffset())/60;
-	
+
 	// Convert to local time string
-	var jsonDate= 
+	var jsonDate=
 		pad( this.getFullYear()		,4)	+ "-" +
 		pad((this.getMonth() + 1)	,2)	+ "-" +
 		pad( this.getDate()			,2)	+ "T" +
@@ -160,7 +160,7 @@ Date.prototype.getJSONlocal = function()
 		pad( this.getMinutes()		,2) + "." +
 		pad( this.getMilliseconds()	,3) +
 		min2hhmm(this.getTimezoneOffset());
-	
+
 	return jsonDate;
 }
 
@@ -202,11 +202,11 @@ FEED.prototype.postUpdate = function(feed)
 	feed.onUpdate(feed);
 };
 // Deal with top level functionality, such as ensuring startDate & endDate are sensible,
-// then call .getFeedMessages	
+// then call .getFeedMessages
 FEED.prototype.getMessages		= function(startDate, endDate, callback)
 {
 	this.endDate = endDate ? new Date(endDate) : null;
-	
+
 	if(startDate && (this.startDate ? new Date(startDate).getTime() != this.startDate.getTime() : true))
 		this.startDate = new Date(startDate);
 	else	// startDate not pre-defined
@@ -226,7 +226,7 @@ FEED.prototype.getMessages		= function(startDate, endDate, callback)
 			this.startDate.setHours(3);
 		}
 	}
-	
+
 	// Filter obsolete messages
 	var feed = this;
 	this.tracker.forEach(function(tracker)
@@ -237,7 +237,7 @@ FEED.prototype.getMessages		= function(startDate, endDate, callback)
 			while(tracker.message[tracker.message.length-1].time.getTime() < feed.startDate)
 				tracker.message.pop();
 		}
-			
+
 		if(tracker.message.length && endDate)
 			// Newest messages will always be at the front
 			while(tracker.message[0].time.getTime() > feed.endDate)
@@ -245,7 +245,7 @@ FEED.prototype.getMessages		= function(startDate, endDate, callback)
 	});
 
 	this.lastUpdated=new Date();	// Simple timestamp of when we last tried an update
-	
+
 	// Call underlying get function
 	this.getFeedMessages(this.startDate, this.endDate, callback);
 };
@@ -254,18 +254,18 @@ FEED.prototype.getFeedMessages	= function(startDate, endDate, callback)
 	// Update all trackers within feed
 	this.tracker.forEach( function (tracker)
 	{
-		tracker.getMessages(startDate, endDate, callback);	
+		tracker.getMessages(startDate, endDate, callback);
 	});
 };
 
 
 
 // Generic TRACKER object
-function TRACKER()
+function TRACKER(id)
 {
 	this.message = new Array();
+	this.id = ("number" == typeof(id)) ? id : 0;
 }
-TRACKER.prototype.id	= 0;
 TRACKER.prototype.name	= "";
 TRACKER.prototype.constructor = TRACKER;
 TRACKER.prototype.type	= "";
@@ -286,10 +286,10 @@ TRACKER.prototype.trackColourKml = function()
 	var opacity = Math.round(255*this.trackOpacity).toString(16);
 	if (opacity.length < 2)
 		opacity = "0" + opacity;
-	
+
 	// Get RGB (hex)
 	var rgb = this.trackColourRGB();
-	
+
 	// KML color format is aabbggrr - in hex. aa is opacity
 	return	opacity
 		+	rgb.substr(4,2)
@@ -306,7 +306,7 @@ TRACKER.prototype.getOziPlt = function()
 {
 	var plt = "";
 	var points = 0;
-	
+
 	// Messages are latest first, so we build file backwards
 	this.message.forEach(function (message)
 	{
@@ -316,9 +316,9 @@ TRACKER.prototype.getOziPlt = function()
 			var altitude	= -777;		// = not valid
 			if(message.hasAltitude())
 				altitude	= 3.2808*message.altitude;		// in feet
-			
+
 			// latitude, longitude, 0=contiguous track, altitude_ft (-777 = not valid), TDateTime, Date_str, Time_str
-			plt = 
+			plt =
 				message.latitude.toString()	+ "," +
 				message.longitude.toString()+ "," +
 				"0," + altitude.toString()	+ "," +
@@ -450,7 +450,7 @@ FEEDS.getKml = function()
 		var txt = FEEDS.feed[0].endDate.toLocaleString();
 	else
 		var txt = FEEDS.feed[0].lastUpdated.toLocaleString();
-	
+
 	// File Header string
 	txt	= "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\r\n"
 		+ "<kml xmlns='http://www.opengis.net/kml/2.2' xmlns:atom='http://www.w3.org/2005/Atom' xmlns:gx='http://www.google.com/kml/ext/2.2' xmlns:kml='http://www.opengis.net/kml/2.2'>\r\n"
@@ -458,14 +458,14 @@ FEEDS.getKml = function()
 		+ "\t\t<name>Tracker</name>\r\n"
 		+ "\t\t<description>Tracker data from " + FEEDS.feed[0].startDate.toLocaleString().replace(",","")
 		+ " to " + txt.replace(",","") + "</description>\r\n";
-		
+
 	FEEDS.feed.forEach(function (feed)
 	{
 		feed.tracker.forEach(function (tracker)
 		{
 			// Create style name
 			var style = feed.type + "_" + tracker.type;
-			
+
 			// Determine altitudeMode
 			// Only give a real altitude IF ALL messages with a location have a valid altitude
 			var altitudeMode = "absolute";
@@ -474,7 +474,7 @@ FEEDS.getKml = function()
 				if(message.hasLocation() && !message.hasAltitude())
 					altitudeMode = "relativeToGround";
 			});
-			
+
 			txt+= "\t\t<Style id='" + style +"'>\r\n"
 				+ "\t\t\t<LineStyle>\r\n"
 				+ "\t\t\t\t<color>" + tracker.trackColourKml() + "</color>\r\n"
@@ -491,7 +491,7 @@ FEEDS.getKml = function()
 				+ "\t\t\t\t<coordinates>\r\n"
 				;
 				// NB: Assumes all messages either have or don't have altitude
-				
+
 			tracker.message.forEach( function (message)
 			{
 				if(message.hasLocation())
@@ -513,7 +513,7 @@ FEEDS.getKml = function()
 	txt +=
 		"\t</Document>\r\n" +
 		"</kml>\r\n" ;
-		
+
 	return txt;
 };
 
@@ -533,7 +533,7 @@ FEEDS.getGpx = function()
 		+ "\t\t<text>Tracker data from " + FEEDS.feed[0].startDate.toLocaleString().replace(",","")
 		+ " to " + txt + "</text>\r\n"
 		+ "\t</metadata>\r\n" ; // TODO: MetaData. Example has link
-		
+
 	FEEDS.feed.forEach(function (feed)
 	{
 		feed.tracker.forEach(function (tracker)
@@ -546,7 +546,7 @@ FEEDS.getGpx = function()
 			{
 				if(message.hasLocation())
 				{
-					txt	+="\t\t\t<trkpt" 
+					txt	+="\t\t\t<trkpt"
 						+ " lat='" + message.latitude.toString()	+ "'"
 						+ " lon='" + message.longitude.toString()	+ "'>\r\n";
 					if(message.hasAltitude())
@@ -561,7 +561,7 @@ FEEDS.getGpx = function()
 		});
 	});
 	txt += "</gpx>\r\n" ;
-		
+
 	return txt;
 };
 
