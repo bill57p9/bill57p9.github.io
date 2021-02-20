@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Tracker OS Map</title>
+		<link rel="stylesheet" href="https://labs.os.uk/public/os-api-branding/v0.2.0/os-api-branding.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+		<style>
+        body,
+				.sos,
+				.leaflet-popup,
+				.fix,
+				#mapTextBox
+				{
+					font: 16px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
+					margin: 0;
+					padding:0;
+				}
+				#mapTextBox
+				{
+					background: gray;
+					color: white;
+			}
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+		    .pointerCoords {
+		        display: block;
+		        position: relative;
+		        margin: 0px auto;
+		        width: 50%;
+		        padding: 10px;
+		        border: none;
+						z-index: 600;
+		        border-radius: 0 0 3px 3px;
+		        text-align: center;
+		        /*color: #fff;
+		        background: #333;*/
+		    }
+				.sos
+				{
+					background: red;
+					/*font-size: 14px;
+					font-weight: bold;*/
+				}
+				.plotTable
+				{
+					overflow-y: auto;
+					height: 200px;
+				}
+				.plotTable thead
+				{
+					position: sticky;
+					top: 0;
+				}
+				#Settings
+				{
+					margin: auto;
+					width:  auto;
+					z-index: 1000;
+					position: absolute;
+					top:      2%;
+					left:     50%;
+					display:  none;
+					opacity:  90%;
+					-ms-transform: translate(-50%,-2%);
+					transform: translate(-50%,-2%);
+					border: 1px solid grey;
+					border-radius: 5px;
+					background: gray;
+					color: white;
+				}
+		</style>
+	</head>
+	<body>
+		<div id="map"></div>
+		<div id="coords"></div>
+		<div id="Settings" class="Settings">
+			<table id="updateTimes">
+				<tr>
+					<td>Start Time</td>
+					<td><input type="datetime-local" id="startDate" onchange="Loc8.onChange(this.id, this.value)"/></td>
+				</tr>
+				<tr>
+					<td>End Time</td>
+					<td><input type="datetime-local" id="endDate"  onchange="Loc8.onChange(this.id, this.value)"/></td>
+				</tr>
+				<tr>
+					<td><input type="checkbox"       id="liveUpdate" onchange="Loc8.onChange(this.id, this.checked)"/></td>
+					<td>Live <input type="button" value="Update" onClick="Loc8.update()"/></td>
+				</tr>
+				<tr>
+					<td><input type="checkbox"       id="follow"  onchange="Loc8.onChange(this.id, this.checked)"/></td>
+					<td>Recentre on Update</td>
+				</tr>
+				<tr>
+					<td>Save As</td>
+					<td>
+						<input type="button" value="GPX" onClick="Loc8.download(Loc8.gpx, {filename:'loc8.gpx'})"/>
+						<input type="button" value="KML" onClick="Loc8.download(Loc8.kml, {filename:'loc8.kml'})"/>
+					</td>
+			</table>
+		</div>
+
+		<script src='loc8.js'></script>
+		<script src='loc8web.js'></script>
+		<script src='traccar.js'></script>
+		<script src='geotools.min.js'></script>
+
+		<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.5.0/proj4.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.min.js"></script>
+		<script src='loc8map.js'></script>
+		<script src='osGridRef.js'></script>
+
+		<script src="https://labs.os.uk/public/os-api-branding/v0.2.0/os-api-branding.js"></script>
+
+
+	</body>
+</html>

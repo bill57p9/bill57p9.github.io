@@ -3,6 +3,11 @@
 
 // Bill token kdykjYlAsAzZEAFP51ohGGqSbrZUlpAs
 
+// Adaptation
+const TRACCAR_retry_startup = 250; 	// At startup check every 250ms for connect
+const TRACCAR_retry_reconnect = 5000; // On disconnect, reconnect after 5 s
+const TRACCAR_endDate_default = '2100-01-01T00:00:00';
+
 // Return a JSON date format string
 function jsonDate(date)
 {
@@ -220,9 +225,19 @@ function TRACCAR_FEED(feedId)
 				messages.forEach((message) =>
 				{
 					if(message.valid)
-						feed.getTracker(message.deviceId).message.push(new TRACCAR_MESSAGE(message));
+					{
+						var device = feed.getTracker(message.deviceId);
+						if(device)
+							device.message.push(new TRACCAR_MESSAGE(message));
+					}
 				});
-				console.log(feed);
+				if(callback)
+					callback(feed);
+			}
+
+			const setFeedStatus = function(status)
+			{
+				feed.status = status
 				if(callback)
 					callback(feed);
 			}
@@ -234,7 +249,7 @@ function TRACCAR_FEED(feedId)
 				(
 					'reports/route',
 					'?from=', jsonDate(startDate),
-					'&to='	, jsonDate(null === endDate ? new Date('2100-01-01T00:00:00') : endDate),
+					'&to='	, jsonDate(null === endDate ? new Date(TRACCAR_endDate_default) : endDate),
 					//'?token=', this.token,
 					feed.deviceIdQueryString('deviceId')
 				),
@@ -246,6 +261,29 @@ function TRACCAR_FEED(feedId)
 					{
 						console.log('Starting WebSocket ', feed.ws_url);
 						feed.ws = new WebSocket(feed.ws_url);
+
+						// Set feed status on connect
+						feed.ws.onopen = function(event)
+						{
+							console.log('WebSocket connected');
+							setFeedStatus('live');
+						}
+
+						// Set feed status on disconnect
+						feed.ws.onclose = function(event)
+						{
+							console.log('WebSocket disconnected');
+							setFeedStatus('-');
+							// TODO: Reconnect
+						}
+
+						// Set feed status on disconnect
+						feed.ws.onerror = function(event)
+						{
+							console.error('WebSocket Error: ', event);
+							setFeedStatus('error');
+						}
+
 						// Rx message event
 						feed.ws.onmessage = function (rx)
 						{

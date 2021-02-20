@@ -149,9 +149,11 @@ FEED.prototype.onUpdate = function(feed)
 	var tbody=document.createElement("tbody");
 
 	tbody.innerHTML=
-		"<tr><th colspan='5' align='left'>"
+		"<tr><th colspan='4' align='left'>"
 		+feed.name+
-		"</th></tr>";
+		"</th><td>"
+		+(feed.status ? feed.status : '')+
+		"</td></tr>";
 
 
 	feed.tracker.forEach(function(tracker)
